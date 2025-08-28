@@ -22,7 +22,7 @@ class Merit extends Component
 
   public function render()
   {
-		  $subDays = Carbon::parse( now() )->subDays( 2 );
+		  $subDays = Carbon::parse( now() )->subDays( 5 );
 		  $this->projectList = Project::where( 'expiry_date', '>', $subDays )->orderByDesc( 'id' )->get();
 
 		  return view( 'livewire.merit-lists' );
