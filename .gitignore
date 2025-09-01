@@ -18,3 +18,5 @@ yarn-error.log
 /.idea
 /.vscode
 /public/media/
+temp_auto_push.bat
+temp_interactive_push.bat

@@ -37,9 +37,10 @@ class ApplicationsExport implements FromCollection, WithHeadings
             return [
                 'Application #' => $app->application_number,
                 'Full Name' => $app->user->full_name,
+                'Father Name' => $app->user->student->father_name,
                 'Diploma' => $app->project->diploma->name ?? '',
                 'Quota' => implode(', ', $app->quotaName ?? []),
-                'Payment Status' => $app->status,
+                'District' => $app->user->student->district->name,
                 'Created At' => $app->created_at->format('Y-m-d'),
             ];
         });
@@ -50,9 +51,10 @@ class ApplicationsExport implements FromCollection, WithHeadings
         return [
             'Application #',
             'Full Name',
+            'Father Name',
             'Diploma',
             'Quota',
-            'Payment Status',
+            'District',
             'Created At',
         ];
     }
