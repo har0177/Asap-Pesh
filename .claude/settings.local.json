@@ -8,7 +8,8 @@
       "Bash(powershell.exe:*)",
       "Bash(yarn build:*)",
       "Bash(git checkout:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat: Add React + Inertia.js + Ant Design frontend \\(v2\\)\n\nMajor changes:\n- Install Inertia.js Laravel adapter v2.0\n- Install React 18, Ant Design 5.x, and icons\n- Configure Vite for React/JSX\n\nBackend Controllers:\n- Admin/DashboardController - Dashboard with stats\n- Admin/UserController - Full CRUD with search/filter\n- Admin/StudentController - Full CRUD with taxonomy filters\n- Admin/ApplicationController - CRUD with status updates\n- Admin/ProjectController - Full CRUD with application stats\n- PublicSite/HomeController - Home, about, contact, gallery, staff, events\n\nFrontend Pages \\(JSX\\):\n- Layouts: AdminLayout, PublicLayout, AuthLayout\n- Admin: Dashboard, Users/Index, Students/Index, Applications/Index, Projects/Index\n- Public: Welcome \\(dynamic homepage\\)\n\nRoutes:\n- New routes with /v2 prefix in routes/inertia.php\n- Public: /v2, /v2/about, /v2/contact, /v2/gallery, /v2/staff, /v2/merit-list\n- Admin: /v2/admin/dashboard, /v2/admin/users, /v2/admin/students, /v2/admin/applications, /v2/admin/projects\n\nFeatures:\n- Dynamic dashboard with stats cards, recent applications, projects\n- Index pages with search, filter, pagination, CRUD actions\n- Public homepage with hero carousel, features, admissions, news, gallery, staff\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
     ]
   }
 }
