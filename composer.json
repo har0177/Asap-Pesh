@@ -9,6 +9,7 @@
         "brian2694/laravel-toastr": "^5.57",
         "cviebrock/eloquent-sluggable": "^10.0",
         "guzzlehttp/guzzle": "^7.2",
+        "inertiajs/inertia-laravel": "^2.0",
         "laravel/framework": "^10.10",
         "laravel/helpers": "^1.6",
         "laravel/jetstream": "^3.2",

@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(composer require:*)",
+      "Bash(cmd /c \"composer require inertiajs/inertia-laravel\")",
+      "Bash(C:laragonbincomposercomposer.phar require inertiajs/inertia-laravel)",
+      "Bash(powershell.exe -Command \"cd ''C:\\\\laragon\\\\www\\\\asap''; composer require inertiajs/inertia-laravel\")",
+      "Bash(powershell.exe:*)",
+      "Bash(yarn build:*)",
+      "Bash(git checkout:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}
