@@ -1,6 +1,6 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Col, Form, Input, Row, message } from 'antd'
-import { useForm } from '@inertiajs/react'
+import axios from 'axios'
 import CustomModal from '@/Components/CustomModal.jsx'
 import { ProSelect } from '@/Components/AntDesignExtensions/ProSelect.jsx'
 import { handleApiError } from '@/Helpers/CONSTANT.js'
@@ -13,28 +13,12 @@ const UserModal = ({
   onCancel,
 }) => {
   const [form] = Form.useForm()
+  const [loading, setLoading] = useState(false)
   const isEdit = !!record?.id
-
-  const { data, setData, post, put, processing, errors, reset } = useForm({
-    first_name: '',
-    last_name: '',
-    email: '',
-    phone: '',
-    role_id: null,
-    password: '',
-    password_confirmation: '',
-  })
 
   useEffect(() => {
     if (visible && record) {
       form.setFieldsValue({
-        first_name: record.first_name || '',
-        last_name: record.last_name || '',
-        email: record.email || '',
-        phone: record.phone || '',
-        role_id: record.role?.id || null,
-      })
-      setData({
         first_name: record.first_name || '',
         last_name: record.last_name || '',
         email: record.email || '',
@@ -45,55 +29,47 @@ const UserModal = ({
       })
     } else if (visible) {
       form.resetFields()
-      reset()
     }
-  }, [visible, record])
+  }, [visible, record, form])
 
-  const handleSubmit = () => {
-    form.validateFields()
-      .then((values) => {
-        const formData = { ...values }
+  const handleSubmit = async () => {
+    try {
+      const values = await form.validateFields()
+      const formData = { ...values }
 
-        // Remove empty password fields for edit
-        if (isEdit && !formData.password) {
-          delete formData.password
-          delete formData.password_confirmation
-        }
+      // Remove empty password fields for edit
+      if (isEdit && !formData.password) {
+        delete formData.password
+        delete formData.password_confirmation
+      }
 
-        if (isEdit) {
-          put(route('v2.admin.users.update', record.id), {
-            data: formData,
-            onSuccess: () => {
-              message.success('User updated successfully')
-              handleClose()
-              handleRefreshData?.()
-            },
-            onError: (errors) => {
-              handleApiError({ response: { data: { errors } } })
-            },
-          })
-        } else {
-          post(route('v2.admin.users.store'), {
-            data: formData,
-            onSuccess: () => {
-              message.success('User created successfully')
-              handleClose()
-              handleRefreshData?.()
-            },
-            onError: (errors) => {
-              handleApiError({ response: { data: { errors } } })
-            },
-          })
-        }
-      })
-      .catch((errorInfo) => {
-        console.log('Validation failed:', errorInfo)
-      })
+      setLoading(true)
+
+      if (isEdit) {
+        await axios.put(route('v2.admin.users.update', record.id), formData)
+        message.success('User updated successfully')
+      } else {
+        await axios.post(route('v2.admin.users.store'), formData)
+        message.success('User created successfully')
+      }
+
+      handleClose()
+      handleRefreshData?.()
+    } catch (error) {
+      if (error.errorFields) {
+        // Form validation error
+        console.log('Validation failed:', error)
+      } else {
+        // API error
+        handleApiError(error)
+      }
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleClose = () => {
     form.resetFields()
-    reset()
     setVisible(false)
     onCancel?.()
   }
@@ -107,13 +83,11 @@ const UserModal = ({
       showSave
       saveText={isEdit ? 'Update' : 'Create'}
       onSave={handleSubmit}
-      loading={processing}
+      loading={loading}
     >
       <Form
         form={form}
         layout="vertical"
-        initialValues={data}
-        onValuesChange={(_, allValues) => setData(allValues)}
       >
         <Row gutter={16}>
           <Col span={12}>

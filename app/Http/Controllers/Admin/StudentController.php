@@ -4,78 +4,120 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\TaxonomyTypeEnum;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\StudentResource;
 use App\Models\Student;
 use App\Models\Taxonomy;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class StudentController extends Controller
 {
-    public function index(Request $request): Response
+    /**
+     * JSON listing for DataGridTable (AG Grid)
+     */
+    public function listing(Request $request): JsonResponse
     {
         $query = Student::with(['user', 'diploma', 'section', 'session', 'district']);
 
-        // Search
-        if ($request->has('search') && $request->search) {
+        // Handle soft deleted
+        if ($request->boolean('soft_deleted')) {
+            $query->onlyTrashed();
+        }
+
+        // Handle search
+        if ($request->filled('search')) {
             $search = $request->search;
-            $query->whereHas('user', function ($q) use ($search) {
-                $q->where('first_name', 'like', "%{$search}%")
-                    ->orWhere('last_name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%")
-                    ->orWhere('cnic', 'like', "%{$search}%");
+            $query->where(function ($q) use ($search) {
+                $q->where('father_name', 'like', "%{$search}%")
+                    ->orWhere('roll_no', 'like', "%{$search}%")
+                    ->orWhereHas('user', function ($uq) use ($search) {
+                        $uq->where('first_name', 'like', "%{$search}%")
+                            ->orWhere('last_name', 'like', "%{$search}%")
+                            ->orWhere('email', 'like', "%{$search}%")
+                            ->orWhere('phone', 'like', "%{$search}%")
+                            ->orWhere('cnic', 'like', "%{$search}%");
+                    });
             });
         }
 
-        // Filter by diploma
-        if ($request->has('diploma_id') && $request->diploma_id) {
-            $query->where('diploma_id', $request->diploma_id);
+        // Handle filterTree from GlobalFilter
+        if ($request->filled('filterTree')) {
+            $filterTree = $request->filterTree;
+            if (!empty($filterTree['conditions'])) {
+                $this->applyFilterTree($query, $filterTree);
+            }
         }
 
-        // Filter by session
-        if ($request->has('session_id') && $request->session_id) {
-            $query->where('session_id', $request->session_id);
+        // Handle sorting
+        $sortModel = $request->input('sort', []);
+        if (!empty($sortModel)) {
+            foreach ($sortModel as $sort) {
+                $colId = $sort['colId'] ?? null;
+                $sortDirection = $sort['sort'] ?? 'asc';
+                if ($colId) {
+                    $query->orderBy($colId, $sortDirection);
+                }
+            }
+        } else {
+            $query->latest();
         }
 
-        // Filter by section
-        if ($request->has('section_id') && $request->section_id) {
-            $query->where('section_id', $request->section_id);
-        }
+        $pageSize = $request->input('pageSize', 20);
+        $currentPage = $request->input('current', 1);
 
-        $students = $query->latest()
-            ->paginate($request->per_page ?? 15)
-            ->through(function ($student) {
-                return [
-                    'id' => $student->id,
-                    'user_id' => $student->user_id,
-                    'name' => $student->user?->full_name ?? 'N/A',
-                    'email' => $student->user?->email ?? 'N/A',
-                    'phone' => $student->user?->phone ?? 'N/A',
-                    'cnic' => $student->user?->cnic ?? 'N/A',
-                    'father_name' => $student->father_name,
-                    'diploma' => $student->diploma?->name ?? 'N/A',
-                    'section' => $student->section?->name ?? 'N/A',
-                    'session' => $student->session?->name ?? 'N/A',
-                    'district' => $student->district?->name ?? 'N/A',
-                    'roll_no' => $student->roll_no,
-                    'avatar' => $student->user?->avatar,
-                    'created_at' => $student->created_at?->format('Y-m-d'),
-                ];
-            });
+        $students = $query->paginate($pageSize, ['*'], 'page', $currentPage);
 
-        // Get filter options
-        $diplomas = Taxonomy::where('type', TaxonomyTypeEnum::DIPLOMA)->get(['id', 'name']);
-        $sessions = Taxonomy::where('type', TaxonomyTypeEnum::SESSION)->get(['id', 'name']);
-        $sections = Taxonomy::where('type', TaxonomyTypeEnum::SECTION)->get(['id', 'name']);
-
-        return Inertia::render('Admin/Students/Index', [
-            'students' => $students,
-            'diplomas' => $diplomas,
-            'sessions' => $sessions,
-            'sections' => $sections,
-            'filters' => $request->only(['search', 'diploma_id', 'session_id', 'section_id', 'per_page']),
+        return response()->json([
+            'success' => true,
+            'data' => StudentResource::collection($students->items()),
+            'total' => $students->total(),
+            'pagination' => [
+                'current_page' => $students->currentPage(),
+                'last_page' => $students->lastPage(),
+                'per_page' => $students->perPage(),
+                'total' => $students->total(),
+            ],
         ]);
+    }
+
+    /**
+     * Apply filter tree from GlobalFilter component
+     */
+    protected function applyFilterTree($query, array $filterTree): void
+    {
+        $type = $filterTree['type'] ?? 'AND';
+        $conditions = $filterTree['conditions'] ?? [];
+
+        $query->where(function ($q) use ($conditions, $type) {
+            foreach ($conditions as $condition) {
+                if (isset($condition['conditions'])) {
+                    $this->applyFilterTree($q, $condition);
+                } else {
+                    $field = $condition['field'] ?? null;
+                    $operator = $condition['operator'] ?? 'is';
+                    $value = $condition['value'] ?? null;
+
+                    if ($field && $value !== null) {
+                        $method = strtolower($type) === 'or' ? 'orWhere' : 'where';
+
+                        if (in_array($field, ['diploma_id', 'section_id', 'session_id'])) {
+                            $q->$method($field, is_array($value) ? $value[0] : $value);
+                        } else {
+                            $q->$method($field, 'like', "%{$value}%");
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    public function index(Request $request): Response
+    {
+        // Render the new AG Grid listing page
+        return Inertia::render('Admin/Students/Listing');
     }
 
     public function show(Student $student): Response
@@ -229,15 +271,45 @@ class StudentController extends Controller
             'province_id' => $validated['province_id'] ?? null,
         ]);
 
-        return redirect()->route('admin.students.index')
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Student updated successfully.',
+            ]);
+        }
+
+        return redirect()->route('v2.admin.students.index')
             ->with('success', 'Student updated successfully.');
     }
 
-    public function destroy(Student $student)
+    public function destroy(Request $request, Student $student)
     {
         $student->delete();
 
-        return redirect()->route('admin.students.index')
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Student deleted successfully.',
+            ]);
+        }
+
+        return redirect()->route('v2.admin.students.index')
             ->with('success', 'Student deleted successfully.');
+    }
+
+    public function restore(Request $request, int $id)
+    {
+        $student = Student::withTrashed()->findOrFail($id);
+        $student->restore();
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Student restored successfully.',
+            ]);
+        }
+
+        return redirect()->route('v2.admin.students.index')
+            ->with('success', 'Student restored successfully.');
     }
 }

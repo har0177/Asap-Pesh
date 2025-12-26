@@ -5,67 +5,149 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Application;
 use App\Models\Project;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class ApplicationController extends Controller
 {
-    public function index(Request $request): Response
+    /**
+     * JSON listing for DataGridTable (AG Grid)
+     */
+    public function listing(Request $request): JsonResponse
     {
         $query = Application::with(['user', 'project.diploma']);
 
-        // Search
-        if ($request->has('search') && $request->search) {
+        // Handle soft deleted
+        if ($request->boolean('soft_deleted')) {
+            $query->onlyTrashed();
+        }
+
+        // Handle search
+        if ($request->filled('search')) {
             $search = $request->search;
-            $query->whereHas('user', function ($q) use ($search) {
-                $q->where('first_name', 'like', "%{$search}%")
-                    ->orWhere('last_name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%")
-                    ->orWhere('cnic', 'like', "%{$search}%");
+            $query->where(function ($q) use ($search) {
+                $q->where('challan_no', 'like', "%{$search}%")
+                    ->orWhereHas('user', function ($uq) use ($search) {
+                        $uq->where('first_name', 'like', "%{$search}%")
+                            ->orWhere('last_name', 'like', "%{$search}%")
+                            ->orWhere('email', 'like', "%{$search}%")
+                            ->orWhere('phone', 'like', "%{$search}%")
+                            ->orWhere('cnic', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('project', function ($pq) use ($search) {
+                        $pq->where('name', 'like', "%{$search}%");
+                    });
             });
         }
 
-        // Filter by project
-        if ($request->has('project_id') && $request->project_id) {
-            $query->where('project_id', $request->project_id);
+        // Handle filterTree from GlobalFilter
+        if ($request->filled('filterTree')) {
+            $filterTree = $request->filterTree;
+            if (!empty($filterTree['conditions'])) {
+                $this->applyFilterTree($query, $filterTree);
+            }
         }
 
-        // Filter by status
-        if ($request->has('status') && $request->status) {
-            $query->where('status', $request->status);
+        // Handle sorting
+        $sortModel = $request->input('sort', []);
+        if (!empty($sortModel)) {
+            foreach ($sortModel as $sort) {
+                $colId = $sort['colId'] ?? null;
+                $sortDirection = $sort['sort'] ?? 'asc';
+                if ($colId) {
+                    $query->orderBy($colId, $sortDirection);
+                }
+            }
+        } else {
+            $query->latest();
         }
 
-        $applications = $query->latest()
-            ->paginate($request->per_page ?? 15)
-            ->through(function ($application) {
-                return [
-                    'id' => $application->id,
-                    'user_id' => $application->user_id,
-                    'name' => $application->user?->full_name ?? 'N/A',
-                    'email' => $application->user?->email ?? 'N/A',
-                    'phone' => $application->user?->phone ?? 'N/A',
-                    'cnic' => $application->user?->cnic ?? 'N/A',
-                    'project' => $application->project?->name ?? 'N/A',
-                    'diploma' => $application->project?->diploma?->name ?? 'N/A',
-                    'status' => $application->status,
-                    'quota' => $application->quotaName ?? [],
-                    'challan_no' => $application->challan_no,
+        $pageSize = $request->input('pageSize', 20);
+        $currentPage = $request->input('current', 1);
+
+        $applications = $query->paginate($pageSize, ['*'], 'page', $currentPage);
+
+        $data = $applications->getCollection()->map(function ($application) {
+            return [
+                'id' => $application->id,
+                'user_id' => $application->user_id,
+                'project_id' => $application->project_id,
+                'user' => [
+                    'id' => $application->user?->id,
+                    'full_name' => $application->user?->full_name,
+                    'email' => $application->user?->email,
+                    'phone' => $application->user?->phone,
+                    'cnic' => $application->user?->cnic,
                     'avatar' => $application->user?->avatar,
-                    'created_at' => $application->created_at?->format('Y-m-d'),
-                ];
-            });
+                ],
+                'project' => [
+                    'id' => $application->project?->id,
+                    'name' => $application->project?->name,
+                    'diploma' => [
+                        'id' => $application->project?->diploma?->id,
+                        'name' => $application->project?->diploma?->name,
+                    ],
+                ],
+                'status' => $application->status,
+                'quota' => $application->quotaName ?? [],
+                'challan_no' => $application->challan_no,
+                'remarks' => $application->remarks,
+                'created_at' => $application->created_at?->format('Y-m-d'),
+                'updated_at' => $application->updated_at?->format('Y-m-d'),
+                'deleted_at' => $application->deleted_at?->format('Y-m-d'),
+            ];
+        });
 
-        // Get filter options
-        $projects = Project::where('status', 1)->get(['id', 'name']);
-        $statuses = ['Pending', 'Paid', 'Rejected', 'Approved'];
-
-        return Inertia::render('Admin/Applications/Index', [
-            'applications' => $applications,
-            'projects' => $projects,
-            'statuses' => $statuses,
-            'filters' => $request->only(['search', 'project_id', 'status', 'per_page']),
+        return response()->json([
+            'success' => true,
+            'data' => $data,
+            'total' => $applications->total(),
+            'pagination' => [
+                'current_page' => $applications->currentPage(),
+                'last_page' => $applications->lastPage(),
+                'per_page' => $applications->perPage(),
+                'total' => $applications->total(),
+            ],
         ]);
+    }
+
+    /**
+     * Apply filter tree from GlobalFilter component
+     */
+    protected function applyFilterTree($query, array $filterTree): void
+    {
+        $type = $filterTree['type'] ?? 'AND';
+        $conditions = $filterTree['conditions'] ?? [];
+
+        $query->where(function ($q) use ($conditions, $type) {
+            foreach ($conditions as $condition) {
+                if (isset($condition['conditions'])) {
+                    $this->applyFilterTree($q, $condition);
+                } else {
+                    $field = $condition['field'] ?? null;
+                    $operator = $condition['operator'] ?? 'is';
+                    $value = $condition['value'] ?? null;
+
+                    if ($field && $value !== null) {
+                        $method = strtolower($type) === 'or' ? 'orWhere' : 'where';
+
+                        if ($field === 'project_id' || $field === 'status') {
+                            $q->$method($field, is_array($value) ? $value[0] : $value);
+                        } else {
+                            $q->$method($field, 'like', "%{$value}%");
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    public function index(Request $request): Response
+    {
+        // Render the new AG Grid listing page
+        return Inertia::render('Admin/Applications/Listing');
     }
 
     public function show(Application $application): Response
@@ -142,16 +224,46 @@ class ApplicationController extends Controller
 
         $application->update($validated);
 
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Application status updated successfully.',
+            ]);
+        }
+
         return redirect()->back()
             ->with('success', 'Application status updated successfully.');
     }
 
-    public function destroy(Application $application)
+    public function destroy(Request $request, Application $application)
     {
         $application->delete();
 
-        return redirect()->route('admin.applications.index')
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Application deleted successfully.',
+            ]);
+        }
+
+        return redirect()->route('v2.admin.applications.index')
             ->with('success', 'Application deleted successfully.');
+    }
+
+    public function restore(Request $request, int $id)
+    {
+        $application = Application::withTrashed()->findOrFail($id);
+        $application->restore();
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Application restored successfully.',
+            ]);
+        }
+
+        return redirect()->route('v2.admin.applications.index')
+            ->with('success', 'Application restored successfully.');
     }
 
     public function export(Request $request)

@@ -6,56 +6,133 @@ use App\Enums\TaxonomyTypeEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Project;
 use App\Models\Taxonomy;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class ProjectController extends Controller
 {
+    /**
+     * JSON listing for DataGridTable (AG Grid)
+     */
+    public function listing(Request $request): JsonResponse
+    {
+        $query = Project::with('diploma')->withCount('applications');
+
+        // Handle soft deleted
+        if ($request->boolean('soft_deleted')) {
+            $query->onlyTrashed();
+        }
+
+        // Handle search
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhereHas('diploma', function ($dq) use ($search) {
+                        $dq->where('name', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        // Handle filterTree from GlobalFilter
+        if ($request->filled('filterTree')) {
+            $filterTree = $request->filterTree;
+            if (!empty($filterTree['conditions'])) {
+                $this->applyFilterTree($query, $filterTree);
+            }
+        }
+
+        // Handle sorting
+        $sortModel = $request->input('sort', []);
+        if (!empty($sortModel)) {
+            foreach ($sortModel as $sort) {
+                $colId = $sort['colId'] ?? null;
+                $sortDirection = $sort['sort'] ?? 'asc';
+                if ($colId) {
+                    $query->orderBy($colId, $sortDirection);
+                }
+            }
+        } else {
+            $query->latest();
+        }
+
+        $pageSize = $request->input('pageSize', 20);
+        $currentPage = $request->input('current', 1);
+
+        $projects = $query->paginate($pageSize, ['*'], 'page', $currentPage);
+
+        $data = $projects->getCollection()->map(function ($project) {
+            return [
+                'id' => $project->id,
+                'name' => $project->name,
+                'description' => $project->description,
+                'diploma' => [
+                    'id' => $project->diploma?->id,
+                    'name' => $project->diploma?->name,
+                ],
+                'seats' => $project->seats,
+                'fee' => $project->fee,
+                'deadline' => $project->deadline,
+                'status' => $project->status,
+                'applications_count' => $project->applications_count ?? 0,
+                'quota' => $project->quotaName ?? [],
+                'created_at' => $project->created_at?->format('Y-m-d'),
+                'updated_at' => $project->updated_at?->format('Y-m-d'),
+                'deleted_at' => $project->deleted_at?->format('Y-m-d'),
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => $data,
+            'total' => $projects->total(),
+            'pagination' => [
+                'current_page' => $projects->currentPage(),
+                'last_page' => $projects->lastPage(),
+                'per_page' => $projects->perPage(),
+                'total' => $projects->total(),
+            ],
+        ]);
+    }
+
+    /**
+     * Apply filter tree from GlobalFilter component
+     */
+    protected function applyFilterTree($query, array $filterTree): void
+    {
+        $type = $filterTree['type'] ?? 'AND';
+        $conditions = $filterTree['conditions'] ?? [];
+
+        $query->where(function ($q) use ($conditions, $type) {
+            foreach ($conditions as $condition) {
+                if (isset($condition['conditions'])) {
+                    $this->applyFilterTree($q, $condition);
+                } else {
+                    $field = $condition['field'] ?? null;
+                    $operator = $condition['operator'] ?? 'is';
+                    $value = $condition['value'] ?? null;
+
+                    if ($field && $value !== null) {
+                        $method = strtolower($type) === 'or' ? 'orWhere' : 'where';
+
+                        if ($field === 'diploma_id' || $field === 'status') {
+                            $q->$method($field, is_array($value) ? $value[0] : $value);
+                        } else {
+                            $q->$method($field, 'like', "%{$value}%");
+                        }
+                    }
+                }
+            }
+        });
+    }
+
     public function index(Request $request): Response
     {
-        $query = Project::with('diploma');
-
-        // Search
-        if ($request->has('search') && $request->search) {
-            $query->where('name', 'like', "%{$request->search}%");
-        }
-
-        // Filter by status
-        if ($request->has('status') && $request->status !== '') {
-            $query->where('status', $request->status);
-        }
-
-        // Filter by diploma
-        if ($request->has('diploma_id') && $request->diploma_id) {
-            $query->where('diploma_id', $request->diploma_id);
-        }
-
-        $projects = $query->latest()
-            ->paginate($request->per_page ?? 15)
-            ->through(function ($project) {
-                return [
-                    'id' => $project->id,
-                    'name' => $project->name,
-                    'diploma' => $project->diploma?->name ?? 'N/A',
-                    'seats' => $project->seats,
-                    'fee' => $project->fee,
-                    'deadline' => $project->deadline,
-                    'status' => $project->status,
-                    'applications_count' => $project->applications()->count(),
-                    'quota' => $project->quotaName ?? [],
-                    'created_at' => $project->created_at?->format('Y-m-d'),
-                ];
-            });
-
-        // Get filter options
-        $diplomas = Taxonomy::where('type', TaxonomyTypeEnum::DIPLOMA)->get(['id', 'name']);
-
-        return Inertia::render('Admin/Projects/Index', [
-            'projects' => $projects,
-            'diplomas' => $diplomas,
-            'filters' => $request->only(['search', 'status', 'diploma_id', 'per_page']),
-        ]);
+        // Render the new AG Grid listing page
+        return Inertia::render('Admin/Projects/Listing');
     }
 
     public function create(): Response
@@ -82,9 +159,16 @@ class ProjectController extends Controller
             'status' => 'boolean',
         ]);
 
-        Project::create($validated);
+        $project = Project::create($validated);
 
-        return redirect()->route('admin.projects.index')
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Project created successfully.',
+            ]);
+        }
+
+        return redirect()->route('v2.admin.projects.index')
             ->with('success', 'Project created successfully.');
     }
 
@@ -169,20 +253,57 @@ class ProjectController extends Controller
 
         $project->update($validated);
 
-        return redirect()->route('admin.projects.index')
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Project updated successfully.',
+            ]);
+        }
+
+        return redirect()->route('v2.admin.projects.index')
             ->with('success', 'Project updated successfully.');
     }
 
-    public function destroy(Project $project)
+    public function destroy(Request $request, Project $project)
     {
         if ($project->applications()->count() > 0) {
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cannot delete project with existing applications.',
+                ], 422);
+            }
+
             return redirect()->back()
                 ->with('error', 'Cannot delete project with existing applications.');
         }
 
         $project->delete();
 
-        return redirect()->route('admin.projects.index')
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Project deleted successfully.',
+            ]);
+        }
+
+        return redirect()->route('v2.admin.projects.index')
             ->with('success', 'Project deleted successfully.');
+    }
+
+    public function restore(Request $request, int $id)
+    {
+        $project = Project::withTrashed()->findOrFail($id);
+        $project->restore();
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Project restored successfully.',
+            ]);
+        }
+
+        return redirect()->route('v2.admin.projects.index')
+            ->with('success', 'Project restored successfully.');
     }
 }

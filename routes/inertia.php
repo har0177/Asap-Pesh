@@ -44,7 +44,7 @@ Route::prefix('v2/admin')->middleware(['auth'])->group(function () {
     Route::get('/users', [UserController::class, 'index'])
         ->name('v2.admin.users.index')
         ->middleware('can:manage users');
-    Route::get('/users/listing', [UserController::class, 'listing'])
+    Route::post('/users/listing', [UserController::class, 'listing'])
         ->name('v2.admin.users.listing')
         ->middleware('can:manage users');
     Route::get('/users/create', [UserController::class, 'create'])
@@ -65,12 +65,15 @@ Route::prefix('v2/admin')->middleware(['auth'])->group(function () {
     Route::delete('/users/{user}', [UserController::class, 'destroy'])
         ->name('v2.admin.users.destroy')
         ->middleware('can:delete user');
+    Route::post('/users/{user}/restore', [UserController::class, 'restore'])
+        ->name('v2.admin.users.restore')
+        ->middleware('can:edit user');
 
     // Students
     Route::get('/students', [StudentController::class, 'index'])
         ->name('v2.admin.students.index')
         ->middleware('can:manage students');
-    Route::get('/students/listing', [StudentController::class, 'listing'])
+    Route::post('/students/listing', [StudentController::class, 'listing'])
         ->name('v2.admin.students.listing')
         ->middleware('can:manage students');
     Route::get('/students/{student}', [StudentController::class, 'show'])
@@ -85,12 +88,15 @@ Route::prefix('v2/admin')->middleware(['auth'])->group(function () {
     Route::delete('/students/{student}', [StudentController::class, 'destroy'])
         ->name('v2.admin.students.destroy')
         ->middleware('can:delete student');
+    Route::post('/students/{student}/restore', [StudentController::class, 'restore'])
+        ->name('v2.admin.students.restore')
+        ->middleware('can:edit student');
 
     // Applications
     Route::get('/applications', [ApplicationController::class, 'index'])
         ->name('v2.admin.applications.index')
         ->middleware('can:manage applications');
-    Route::get('/applications/listing', [ApplicationController::class, 'listing'])
+    Route::post('/applications/listing', [ApplicationController::class, 'listing'])
         ->name('v2.admin.applications.listing')
         ->middleware('can:manage applications');
     Route::get('/applications/{application}', [ApplicationController::class, 'show'])
@@ -102,15 +108,18 @@ Route::prefix('v2/admin')->middleware(['auth'])->group(function () {
     Route::delete('/applications/{application}', [ApplicationController::class, 'destroy'])
         ->name('v2.admin.applications.destroy')
         ->middleware('can:manage applications');
-    Route::get('/applications/export', [ApplicationController::class, 'export'])
+    Route::post('/applications/export', [ApplicationController::class, 'export'])
         ->name('v2.admin.applications.export')
         ->middleware('can:manage applications');
+    Route::post('/applications/{application}/restore', [ApplicationController::class, 'restore'])
+        ->name('v2.admin.applications.restore')
+        ->middleware('can:edit application');
 
     // Projects
     Route::get('/projects', [ProjectController::class, 'index'])
         ->name('v2.admin.projects.index')
         ->middleware('can:manage projects');
-    Route::get('/projects/listing', [ProjectController::class, 'listing'])
+    Route::post('/projects/listing', [ProjectController::class, 'listing'])
         ->name('v2.admin.projects.listing')
         ->middleware('can:manage projects');
     Route::get('/projects/create', [ProjectController::class, 'create'])
@@ -131,4 +140,7 @@ Route::prefix('v2/admin')->middleware(['auth'])->group(function () {
     Route::delete('/projects/{project}', [ProjectController::class, 'destroy'])
         ->name('v2.admin.projects.destroy')
         ->middleware('can:delete project');
+    Route::post('/projects/{project}/restore', [ProjectController::class, 'restore'])
+        ->name('v2.admin.projects.restore')
+        ->middleware('can:edit project');
 });
