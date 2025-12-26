@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\Filterable;
 use App\Traits\HasPermissions;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -25,6 +26,7 @@ class User extends Authenticatable implements HasMedia
   use TwoFactorAuthenticatable;
   use HasPermissions;
   use SoftDeletes;
+  use Filterable;
   
   /**
    * The attributes that are mass assignable.

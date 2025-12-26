@@ -36,9 +36,16 @@ Route::prefix('v2/admin')->middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('v2.admin.dashboard');
 
+    // Dropdown options for ProSelect
+    Route::post('/dropdown/{type}', [\App\Http\Controllers\Admin\DropdownController::class, '__invoke'])
+        ->name('v2.admin.dropdown');
+
     // Users
     Route::get('/users', [UserController::class, 'index'])
         ->name('v2.admin.users.index')
+        ->middleware('can:manage users');
+    Route::get('/users/listing', [UserController::class, 'listing'])
+        ->name('v2.admin.users.listing')
         ->middleware('can:manage users');
     Route::get('/users/create', [UserController::class, 'create'])
         ->name('v2.admin.users.create')
@@ -63,6 +70,9 @@ Route::prefix('v2/admin')->middleware(['auth'])->group(function () {
     Route::get('/students', [StudentController::class, 'index'])
         ->name('v2.admin.students.index')
         ->middleware('can:manage students');
+    Route::get('/students/listing', [StudentController::class, 'listing'])
+        ->name('v2.admin.students.listing')
+        ->middleware('can:manage students');
     Route::get('/students/{student}', [StudentController::class, 'show'])
         ->name('v2.admin.students.show')
         ->middleware('can:view student');
@@ -80,6 +90,9 @@ Route::prefix('v2/admin')->middleware(['auth'])->group(function () {
     Route::get('/applications', [ApplicationController::class, 'index'])
         ->name('v2.admin.applications.index')
         ->middleware('can:manage applications');
+    Route::get('/applications/listing', [ApplicationController::class, 'listing'])
+        ->name('v2.admin.applications.listing')
+        ->middleware('can:manage applications');
     Route::get('/applications/{application}', [ApplicationController::class, 'show'])
         ->name('v2.admin.applications.show')
         ->middleware('can:manage applications');
@@ -96,6 +109,9 @@ Route::prefix('v2/admin')->middleware(['auth'])->group(function () {
     // Projects
     Route::get('/projects', [ProjectController::class, 'index'])
         ->name('v2.admin.projects.index')
+        ->middleware('can:manage projects');
+    Route::get('/projects/listing', [ProjectController::class, 'listing'])
+        ->name('v2.admin.projects.listing')
         ->middleware('can:manage projects');
     Route::get('/projects/create', [ProjectController::class, 'create'])
         ->name('v2.admin.projects.create')

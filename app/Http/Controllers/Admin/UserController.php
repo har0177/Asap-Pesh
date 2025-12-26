@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\UserResource;
 use App\Models\Role;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
@@ -13,6 +15,29 @@ use Inertia\Response;
 
 class UserController extends Controller
 {
+    /**
+     * JSON listing for DataGridTable (AG Grid)
+     */
+    public function listing(Request $request): JsonResponse
+    {
+        $searchableFields = ['first_name', 'last_name', 'email', 'phone', 'cnic'];
+        $filterableFields = ['role_id', 'email_verified_at', 'created_at'];
+
+        $users = User::with('role')
+            ->filterAndPaginate($request, $searchableFields, $filterableFields);
+
+        return response()->json([
+            'success' => true,
+            'data' => UserResource::collection($users->items()),
+            'pagination' => [
+                'current_page' => $users->currentPage(),
+                'last_page' => $users->lastPage(),
+                'per_page' => $users->perPage(),
+                'total' => $users->total(),
+            ],
+        ]);
+    }
+
     public function index(Request $request): Response
     {
         $query = User::with('role');
