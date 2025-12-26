@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\ApplicationController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ProjectController;
+use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\PublicSite\HomeController;
@@ -143,4 +144,30 @@ Route::prefix('v2/admin')->middleware(['auth'])->group(function () {
     Route::post('/projects/{project}/restore', [ProjectController::class, 'restore'])
         ->name('v2.admin.projects.restore')
         ->middleware('can:edit project');
+
+    // Roles
+    Route::get('/roles', [RoleController::class, 'index'])
+        ->name('v2.admin.roles.index')
+        ->middleware('can:manage roles');
+    Route::post('/roles/listing', [RoleController::class, 'listing'])
+        ->name('v2.admin.roles.listing')
+        ->middleware('can:manage roles');
+    Route::get('/roles/create', [RoleController::class, 'create'])
+        ->name('v2.admin.roles.create')
+        ->middleware('can:add role');
+    Route::post('/roles', [RoleController::class, 'store'])
+        ->name('v2.admin.roles.store')
+        ->middleware('can:add role');
+    Route::get('/roles/{role}', [RoleController::class, 'show'])
+        ->name('v2.admin.roles.show')
+        ->middleware('can:view role');
+    Route::get('/roles/{role}/edit', [RoleController::class, 'edit'])
+        ->name('v2.admin.roles.edit')
+        ->middleware('can:edit role');
+    Route::put('/roles/{role}', [RoleController::class, 'update'])
+        ->name('v2.admin.roles.update')
+        ->middleware('can:edit role');
+    Route::delete('/roles/{role}', [RoleController::class, 'destroy'])
+        ->name('v2.admin.roles.destroy')
+        ->middleware('can:delete role');
 });
