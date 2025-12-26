@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\ApplicationController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\EmployeeController;
 use App\Http\Controllers\Admin\ProjectController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\StudentController;
@@ -170,4 +171,30 @@ Route::prefix('v2/admin')->middleware(['auth'])->group(function () {
     Route::delete('/roles/{role}', [RoleController::class, 'destroy'])
         ->name('v2.admin.roles.destroy')
         ->middleware('can:delete role');
+
+    // Employees
+    Route::get('/employees', [EmployeeController::class, 'index'])
+        ->name('v2.admin.employees.index')
+        ->middleware('can:manage employees');
+    Route::post('/employees/listing', [EmployeeController::class, 'listing'])
+        ->name('v2.admin.employees.listing')
+        ->middleware('can:manage employees');
+    Route::get('/employees/create', [EmployeeController::class, 'create'])
+        ->name('v2.admin.employees.create')
+        ->middleware('can:add employee');
+    Route::post('/employees', [EmployeeController::class, 'store'])
+        ->name('v2.admin.employees.store')
+        ->middleware('can:add employee');
+    Route::get('/employees/{employee}', [EmployeeController::class, 'show'])
+        ->name('v2.admin.employees.show')
+        ->middleware('can:view employee');
+    Route::get('/employees/{employee}/edit', [EmployeeController::class, 'edit'])
+        ->name('v2.admin.employees.edit')
+        ->middleware('can:edit employee');
+    Route::put('/employees/{employee}', [EmployeeController::class, 'update'])
+        ->name('v2.admin.employees.update')
+        ->middleware('can:edit employee');
+    Route::delete('/employees/{employee}', [EmployeeController::class, 'destroy'])
+        ->name('v2.admin.employees.destroy')
+        ->middleware('can:delete employee');
 });
