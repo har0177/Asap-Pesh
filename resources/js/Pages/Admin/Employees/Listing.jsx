@@ -4,7 +4,7 @@ import { PlusOutlined } from '@ant-design/icons'
 import { router } from '@inertiajs/react'
 import PageContent from '@/Components/PageContent.jsx'
 import GlobalPageHeader from '@/Components/GlobalPageHeader.jsx'
-import DataGridTable from '@/Components/DataGridTable.jsx'
+import DataGridTable from '@/Components/DataGridTable/DataGridTable.jsx'
 import { employeeColumns } from './EmployeeColumn.jsx'
 import EmployeeModal from './EmployeeModal.jsx'
 import usePermissions from '@/Helpers/Context/usePermissions.js'
@@ -44,7 +44,7 @@ function Listing() {
   }
 
   const handleView = (record) => {
-    router.visit(route('v2.admin.employees.show', record.id))
+    router.visit(route('admin.employees.show', record.id))
   }
 
   const handleUpdate = async (record) => {
@@ -61,7 +61,7 @@ function Listing() {
       cancelText: 'Cancel',
       onOk: async () => {
         try {
-          await axios.delete(route('v2.admin.employees.destroy', record.id))
+          await axios.delete(route('admin.employees.destroy', record.id))
           message.success('Employee deleted successfully')
           handleRefresh()
         } catch (error) {
@@ -98,7 +98,7 @@ function Listing() {
       <GlobalPageHeader
         title="Manage Employees"
         parentPageTitle="Dashboard"
-        parentPageRoute="v2.admin.dashboard"
+        parentPageRoute="admin.dashboard"
         actionButtons={actionButtons}
       />
       <Spin spinning={recordLoading}>
@@ -106,7 +106,7 @@ function Listing() {
           <DataGridTable
             gridRef={gridRef}
             columns={columns}
-            routeName="v2.admin.employees.listing"
+            routeName="admin.employees.listing"
             pageSize={20}
             pagination={true}
             filterFields={EMPLOYEE_FILTER_FIELDS}

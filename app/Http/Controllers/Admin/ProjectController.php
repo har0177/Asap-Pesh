@@ -3,139 +3,54 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\TaxonomyTypeEnum;
+use App\Helpers\Notify;
+use App\Helpers\Response;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\ProjectResource;
 use App\Models\Project;
 use App\Models\Taxonomy;
+use App\Traits\HasListing;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Inertia\Response;
+use Inertia\Response as InertiaResponse;
 
 class ProjectController extends Controller
 {
+    use HasListing;
+
     /**
      * JSON listing for DataGridTable (AG Grid)
      */
     public function listing(Request $request): JsonResponse
     {
-        $query = Project::with('diploma')->withCount('applications');
+        try {
+            $result = $this->getListing(
+                $request,
+                Project::class,
+                ['diploma'],
+                ProjectResource::class,
+                [
+                    'withCount' => ['applications'],
+                ]
+            );
 
-        // Handle soft deleted
-        if ($request->boolean('soft_deleted')) {
-            $query->onlyTrashed();
-        }
-
-        // Handle search
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%")
-                    ->orWhereHas('diploma', function ($dq) use ($search) {
-                        $dq->where('name', 'like', "%{$search}%");
-                    });
-            });
-        }
-
-        // Handle filterTree from GlobalFilter
-        if ($request->filled('filterTree')) {
-            $filterTree = $request->filterTree;
-            if (!empty($filterTree['conditions'])) {
-                $this->applyFilterTree($query, $filterTree);
+            if ($request->boolean('export')) {
+                return $result;
             }
+
+            return response()->json($result);
+        } catch (\Throwable $e) {
+            return Response::error($e->getMessage(), 500);
         }
-
-        // Handle sorting
-        $sortModel = $request->input('sort', []);
-        if (!empty($sortModel)) {
-            foreach ($sortModel as $sort) {
-                $colId = $sort['colId'] ?? null;
-                $sortDirection = $sort['sort'] ?? 'asc';
-                if ($colId) {
-                    $query->orderBy($colId, $sortDirection);
-                }
-            }
-        } else {
-            $query->latest();
-        }
-
-        $pageSize = $request->input('pageSize', 20);
-        $currentPage = $request->input('current', 1);
-
-        $projects = $query->paginate($pageSize, ['*'], 'page', $currentPage);
-
-        $data = $projects->getCollection()->map(function ($project) {
-            return [
-                'id' => $project->id,
-                'name' => $project->name,
-                'description' => $project->description,
-                'diploma' => [
-                    'id' => $project->diploma?->id,
-                    'name' => $project->diploma?->name,
-                ],
-                'seats' => $project->seats,
-                'fee' => $project->fee,
-                'deadline' => $project->deadline,
-                'status' => $project->status,
-                'applications_count' => $project->applications_count ?? 0,
-                'quota' => $project->quotaName ?? [],
-                'created_at' => $project->created_at?->format('Y-m-d'),
-                'updated_at' => $project->updated_at?->format('Y-m-d'),
-                'deleted_at' => $project->deleted_at?->format('Y-m-d'),
-            ];
-        });
-
-        return response()->json([
-            'success' => true,
-            'data' => $data,
-            'total' => $projects->total(),
-            'pagination' => [
-                'current_page' => $projects->currentPage(),
-                'last_page' => $projects->lastPage(),
-                'per_page' => $projects->perPage(),
-                'total' => $projects->total(),
-            ],
-        ]);
     }
 
-    /**
-     * Apply filter tree from GlobalFilter component
-     */
-    protected function applyFilterTree($query, array $filterTree): void
+    public function index(Request $request): InertiaResponse
     {
-        $type = $filterTree['type'] ?? 'AND';
-        $conditions = $filterTree['conditions'] ?? [];
-
-        $query->where(function ($q) use ($conditions, $type) {
-            foreach ($conditions as $condition) {
-                if (isset($condition['conditions'])) {
-                    $this->applyFilterTree($q, $condition);
-                } else {
-                    $field = $condition['field'] ?? null;
-                    $operator = $condition['operator'] ?? 'is';
-                    $value = $condition['value'] ?? null;
-
-                    if ($field && $value !== null) {
-                        $method = strtolower($type) === 'or' ? 'orWhere' : 'where';
-
-                        if ($field === 'diploma_id' || $field === 'status') {
-                            $q->$method($field, is_array($value) ? $value[0] : $value);
-                        } else {
-                            $q->$method($field, 'like', "%{$value}%");
-                        }
-                    }
-                }
-            }
-        });
-    }
-
-    public function index(Request $request): Response
-    {
-        // Render the new AG Grid listing page
         return Inertia::render('Admin/Projects/Listing');
     }
 
-    public function create(): Response
+    public function create(): InertiaResponse
     {
         $diplomas = Taxonomy::where('type', TaxonomyTypeEnum::DIPLOMA)->get(['id', 'name']);
         $quotas = Taxonomy::where('type', TaxonomyTypeEnum::QUOTA)->get(['id', 'name']);
@@ -161,18 +76,19 @@ class ProjectController extends Controller
 
         $project = Project::create($validated);
 
+        Notify::success('Project created successfully.');
+
         if ($request->wantsJson()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Project created successfully.',
+            return Response::success([
+                'project' => new ProjectResource($project->load('diploma')),
             ]);
         }
 
-        return redirect()->route('v2.admin.projects.index')
+        return redirect()->route('admin.projects.index')
             ->with('success', 'Project created successfully.');
     }
 
-    public function show(Project $project): Response
+    public function show(Request $request, Project $project)
     {
         $project->load(['diploma', 'applications.user']);
 
@@ -185,54 +101,38 @@ class ProjectController extends Controller
             'rejected' => $project->applications()->where('status', 'Rejected')->count(),
         ];
 
+        if ($request->wantsJson()) {
+            return Response::success([
+                'project' => new ProjectResource($project),
+                'stats' => $stats,
+            ]);
+        }
+
         return Inertia::render('Admin/Projects/Show', [
-            'project' => [
-                'id' => $project->id,
-                'name' => $project->name,
-                'diploma' => $project->diploma?->name,
-                'seats' => $project->seats,
-                'fee' => $project->fee,
-                'deadline' => $project->deadline,
-                'status' => $project->status,
-                'description' => $project->description,
-                'quota' => $project->quotaName ?? [],
-                'created_at' => $project->created_at?->format('Y-m-d H:i'),
-            ],
+            'project' => new ProjectResource($project),
             'stats' => $stats,
             'recentApplications' => $project->applications()
                 ->with('user')
                 ->latest()
                 ->take(10)
                 ->get()
-                ->map(function ($app) {
-                    return [
-                        'id' => $app->id,
-                        'name' => $app->user?->full_name,
-                        'email' => $app->user?->email,
-                        'status' => $app->status,
-                        'created_at' => $app->created_at?->format('Y-m-d'),
-                    ];
-                }),
+                ->map(fn($app) => [
+                    'id' => $app->id,
+                    'name' => $app->user?->full_name,
+                    'email' => $app->user?->email,
+                    'status' => $app->status,
+                    'created_at' => $app->created_at?->format('Y-m-d'),
+                ]),
         ]);
     }
 
-    public function edit(Project $project): Response
+    public function edit(Project $project): InertiaResponse
     {
         $diplomas = Taxonomy::where('type', TaxonomyTypeEnum::DIPLOMA)->get(['id', 'name']);
         $quotas = Taxonomy::where('type', TaxonomyTypeEnum::QUOTA)->get(['id', 'name']);
 
         return Inertia::render('Admin/Projects/Edit', [
-            'project' => [
-                'id' => $project->id,
-                'name' => $project->name,
-                'diploma_id' => $project->diploma_id,
-                'seats' => $project->seats,
-                'fee' => $project->fee,
-                'deadline' => $project->deadline,
-                'quota' => $project->quota ?? [],
-                'description' => $project->description,
-                'status' => $project->status,
-            ],
+            'project' => new ProjectResource($project->load('diploma')),
             'diplomas' => $diplomas,
             'quotas' => $quotas,
         ]);
@@ -253,25 +153,25 @@ class ProjectController extends Controller
 
         $project->update($validated);
 
+        Notify::success('Project updated successfully.');
+
         if ($request->wantsJson()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Project updated successfully.',
+            return Response::success([
+                'project' => new ProjectResource($project->load('diploma')),
             ]);
         }
 
-        return redirect()->route('v2.admin.projects.index')
+        return redirect()->route('admin.projects.index')
             ->with('success', 'Project updated successfully.');
     }
 
     public function destroy(Request $request, Project $project)
     {
         if ($project->applications()->count() > 0) {
+            Notify::error('Cannot delete project with existing applications.');
+
             if ($request->wantsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Cannot delete project with existing applications.',
-                ], 422);
+                return Response::error('Cannot delete project with existing applications.', 422);
             }
 
             return redirect()->back()
@@ -280,14 +180,13 @@ class ProjectController extends Controller
 
         $project->delete();
 
+        Notify::success('Project deleted successfully.');
+
         if ($request->wantsJson()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Project deleted successfully.',
-            ]);
+            return Response::success();
         }
 
-        return redirect()->route('v2.admin.projects.index')
+        return redirect()->route('admin.projects.index')
             ->with('success', 'Project deleted successfully.');
     }
 
@@ -296,14 +195,15 @@ class ProjectController extends Controller
         $project = Project::withTrashed()->findOrFail($id);
         $project->restore();
 
+        Notify::success('Project restored successfully.');
+
         if ($request->wantsJson()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Project restored successfully.',
+            return Response::success([
+                'project' => new ProjectResource($project->load('diploma')),
             ]);
         }
 
-        return redirect()->route('v2.admin.projects.index')
+        return redirect()->route('admin.projects.index')
             ->with('success', 'Project restored successfully.');
     }
 }

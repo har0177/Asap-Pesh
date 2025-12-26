@@ -50,7 +50,7 @@ export default function Index({
     const handleSearch = (value) => {
         setLoading(true);
         router.get(
-            '/v2/admin/applications',
+            '/admin/applications',
             { ...filters, search: value, page: 1 },
             {
                 preserveState: true,
@@ -62,7 +62,7 @@ export default function Index({
     const handleFilterChange = (key, value) => {
         setLoading(true);
         router.get(
-            '/v2/admin/applications',
+            '/admin/applications',
             { ...filters, [key]: value, page: 1 },
             {
                 preserveState: true,
@@ -74,7 +74,7 @@ export default function Index({
     const handleTableChange = (pagination) => {
         setLoading(true);
         router.get(
-            '/v2/admin/applications',
+            '/admin/applications',
             {
                 ...filters,
                 page: pagination.current,
@@ -88,7 +88,7 @@ export default function Index({
     };
 
     const handleDelete = (id) => {
-        router.delete(`/v2/admin/applications/${id}`, {
+        router.delete(`/admin/applications/${id}`, {
             onSuccess: () => {
                 message.success('Application deleted successfully');
             },
@@ -182,7 +182,7 @@ export default function Index({
             width: 100,
             render: (_, record) => (
                 <Space size="small">
-                    <Link href={`/v2/admin/applications/${record.id}`}>
+                    <Link href={`/admin/applications/${record.id}`}>
                         <Button type="text" size="small" icon={<EyeOutlined />} />
                     </Link>
                     <Popconfirm

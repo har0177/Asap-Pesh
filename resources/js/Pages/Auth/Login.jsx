@@ -7,7 +7,7 @@ import AuthLayout from '@/Layouts/AuthLayout.jsx'
 export default function Login({ status, canResetPassword }) {
   const [form] = Form.useForm()
   const { data, setData, post, processing, errors, reset } = useForm({
-    email: '',
+    username: '',
     password: '',
     remember: false,
   })
@@ -44,16 +44,16 @@ export default function Login({ status, canResetPassword }) {
         autoComplete="off"
       >
         <Form.Item
-          label="Email"
-          validateStatus={errors.email ? 'error' : ''}
-          help={errors.email}
+          label="Email / Username / Phone"
+          validateStatus={errors.username ? 'error' : ''}
+          help={errors.username}
         >
           <Input
             prefix={<UserOutlined />}
-            placeholder="Enter your email"
+            placeholder="Enter your email, username or phone"
             size="large"
-            value={data.email}
-            onChange={(e) => setData('email', e.target.value)}
+            value={data.username}
+            onChange={(e) => setData('username', e.target.value)}
             autoComplete="username"
           />
         </Form.Item>

@@ -66,7 +66,7 @@ const applicationColumns = [
         title: 'Action',
         key: 'action',
         render: (_, record) => (
-            <Link href={`/v2/admin/applications/${record.id}`}>
+            <Link href={`/admin/applications/${record.id}`}>
                 <Button type="link" size="small" icon={<EyeOutlined />}>
                     View
                 </Button>
@@ -110,7 +110,7 @@ export default function Dashboard({
                             title="Total Students"
                             value={stats.totalStudents}
                             prefix={<TeamOutlined style={{ color: '#1890ff' }} />}
-                            valueStyle={{ color: '#1890ff' }}
+                            styles={{ content: { color: '#1890ff' } }}
                         />
                     </Card>
                 </Col>
@@ -120,7 +120,7 @@ export default function Dashboard({
                             title="Total Applications"
                             value={stats.totalApplications}
                             prefix={<FileTextOutlined style={{ color: '#52c41a' }} />}
-                            valueStyle={{ color: '#52c41a' }}
+                            styles={{ content: { color: '#52c41a' } }}
                         />
                     </Card>
                 </Col>
@@ -130,7 +130,7 @@ export default function Dashboard({
                             title="Pending Review"
                             value={stats.pendingApplications}
                             prefix={<ClockCircleOutlined style={{ color: '#faad14' }} />}
-                            valueStyle={{ color: '#faad14' }}
+                            styles={{ content: { color: '#faad14' } }}
                         />
                     </Card>
                 </Col>
@@ -140,7 +140,7 @@ export default function Dashboard({
                             title="Paid Applications"
                             value={stats.paidApplications}
                             prefix={<DollarOutlined style={{ color: '#722ed1' }} />}
-                            valueStyle={{ color: '#722ed1' }}
+                            styles={{ content: { color: '#722ed1' } }}
                         />
                     </Card>
                 </Col>
@@ -154,7 +154,7 @@ export default function Dashboard({
                             title="Total Users"
                             value={stats.totalUsers}
                             prefix={<UserOutlined style={{ color: '#13c2c2' }} />}
-                            valueStyle={{ color: '#13c2c2' }}
+                            styles={{ content: { color: '#13c2c2' } }}
                         />
                     </Card>
                 </Col>
@@ -164,7 +164,7 @@ export default function Dashboard({
                             title="Employees"
                             value={stats.totalEmployees}
                             prefix={<TeamOutlined style={{ color: '#eb2f96' }} />}
-                            valueStyle={{ color: '#eb2f96' }}
+                            styles={{ content: { color: '#eb2f96' } }}
                         />
                     </Card>
                 </Col>
@@ -174,7 +174,7 @@ export default function Dashboard({
                             title="Active Projects"
                             value={stats.activeProjects}
                             prefix={<ProjectOutlined style={{ color: '#fa8c16' }} />}
-                            valueStyle={{ color: '#fa8c16' }}
+                            styles={{ content: { color: '#fa8c16' } }}
                         />
                     </Card>
                 </Col>
@@ -187,7 +187,7 @@ export default function Dashboard({
                     <Card
                         title="Recent Applications"
                         extra={
-                            <Link href="/v2/admin/applications">
+                            <Link href="/admin/applications">
                                 <Button type="link">View All</Button>
                             </Link>
                         }
@@ -210,7 +210,7 @@ export default function Dashboard({
                         title="Active Projects"
                         style={{ marginBottom: 16 }}
                         extra={
-                            <Link href="/v2/admin/projects">
+                            <Link href="/admin/projects">
                                 <Button type="link" size="small">View All</Button>
                             </Link>
                         }
@@ -240,7 +240,7 @@ export default function Dashboard({
                     <Card
                         title="Recent Users"
                         extra={
-                            <Link href="/v2/admin/users">
+                            <Link href="/admin/users">
                                 <Button type="link" size="small">View All</Button>
                             </Link>
                         }
@@ -274,22 +274,22 @@ export default function Dashboard({
                 <Col span={24}>
                     <Card title="Quick Actions">
                         <Space wrap>
-                            <Link href="/v2/admin/applications">
+                            <Link href="/admin/applications">
                                 <Button type="primary" icon={<FileTextOutlined />}>
                                     Manage Applications
                                 </Button>
                             </Link>
-                            <Link href="/v2/admin/students">
+                            <Link href="/admin/students">
                                 <Button icon={<TeamOutlined />}>
                                     View Students
                                 </Button>
                             </Link>
-                            <Link href="/v2/admin/projects">
+                            <Link href="/admin/projects">
                                 <Button icon={<ProjectOutlined />}>
                                     Manage Projects
                                 </Button>
                             </Link>
-                            <Link href="/v2/admin/users">
+                            <Link href="/admin/users">
                                 <Button icon={<UserOutlined />}>
                                     Manage Users
                                 </Button>

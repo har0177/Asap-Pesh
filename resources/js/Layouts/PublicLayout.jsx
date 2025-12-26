@@ -20,12 +20,12 @@ const navItems = [
     {
         key: 'home',
         icon: <HomeOutlined />,
-        label: <Link href="/v2">Home</Link>,
+        label: <Link href="/">Home</Link>,
     },
     {
         key: 'about',
         icon: <InfoCircleOutlined />,
-        label: <Link href="/v2/about">About</Link>,
+        label: <Link href="/about">About</Link>,
     },
     {
         key: 'admissions',
@@ -33,24 +33,24 @@ const navItems = [
         label: 'Admissions',
         children: [
             { key: 'apply', label: <Link href="/apply">Apply Now</Link> },
-            { key: 'merit-list', label: <Link href="/v2/merit-list">Merit List</Link> },
+            { key: 'merit-list', label: <Link href="/merit-list">Merit List</Link> },
             { key: 'fee-structure', label: <Link href="/fee-structure">Fee Structure</Link> },
         ],
     },
     {
         key: 'gallery',
         icon: <PictureOutlined />,
-        label: <Link href="/v2/gallery">Gallery</Link>,
+        label: <Link href="/gallery">Gallery</Link>,
     },
     {
         key: 'staff',
         icon: <TeamOutlined />,
-        label: <Link href="/v2/staff">Staff</Link>,
+        label: <Link href="/staff">Staff</Link>,
     },
     {
         key: 'contact',
         icon: <PhoneOutlined />,
-        label: <Link href="/v2/contact">Contact</Link>,
+        label: <Link href="/contact">Contact</Link>,
     },
 ];
 
@@ -72,7 +72,7 @@ export default function PublicLayout({ children }) {
                 }}
             >
                 <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <Link href="/v2">
+                    <Link href="/">
                         <Title
                             level={4}
                             style={{ color: '#fff', margin: 0, marginRight: 48 }}
@@ -136,10 +136,10 @@ export default function PublicLayout({ children }) {
                             Quick Links
                         </Title>
                         <Space direction="vertical">
-                            <Link href="/v2/about" style={{ color: 'rgba(255,255,255,0.65)' }}>About Us</Link>
+                            <Link href="/about" style={{ color: 'rgba(255,255,255,0.65)' }}>About Us</Link>
                             <Link href="/apply" style={{ color: 'rgba(255,255,255,0.65)' }}>Apply Now</Link>
-                            <Link href="/v2/merit-list" style={{ color: 'rgba(255,255,255,0.65)' }}>Merit List</Link>
-                            <Link href="/v2/contact" style={{ color: 'rgba(255,255,255,0.65)' }}>Contact Us</Link>
+                            <Link href="/merit-list" style={{ color: 'rgba(255,255,255,0.65)' }}>Merit List</Link>
+                            <Link href="/contact" style={{ color: 'rgba(255,255,255,0.65)' }}>Contact Us</Link>
                         </Space>
                     </Col>
                     <Col xs={24} sm={12} md={8}>

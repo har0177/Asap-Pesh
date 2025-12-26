@@ -1,0 +1,25 @@
+{
+  "cookies": [
+    {
+      "name": "XSRF-TOKEN",
+      "value": "eyJpdiI6IjVhSS9EZGxaUy9HZWI5UWphaWM4VHc9PSIsInZhbHVlIjoiR2lKcFZrZlhMbGkxamxBMVZOeHdyNVNRY1lDUVhoR2ZqM1R0NUFDOFNhUVQralpHS292ajRkbHRMbzJpdUJaQ1gvZEh1MXpaVnBTekQwbFc1cjRtR1lYeXFmSVpQcm9oVEJxV0FNM2ZFRlp1ODhlWjMwSlJmOW13bHVYY3lFd08iLCJtYWMiOiI0MWMzMjZkNzg5MzY0ZjljYjQxNjU5NmJkM2FiODU2MmY0N2I2YzMzYjcwYzEzYjk0MGRkYmZjMTEwZWZlOWE5IiwidGFnIjoiIn0%3D",
+      "domain": "asap.test",
+      "path": "/",
+      "expires": 1766760368.016609,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "asa_peshawar_session",
+      "value": "eyJpdiI6IlhvUFlvam1keVJlYzBDcUdQVlhrd0E9PSIsInZhbHVlIjoib3FUTUdlSjhjUXdYSFFGbkZEcEEwT2NDSXV1Ky94aTZTVFNBdkNxaWtSWGx0Qkg5SVhpV2NBWk5HWFRVWEdka1BabXk3K1hYUFVMN0Y0QkZ1czlwLzFIRWZtZCtXNG9zQ3dBaW5Ha1B5aXFoWExvUnMyOStCRmFzWktnTXZUdVMiLCJtYWMiOiJjZmY3YzcyZDZjNDBiNTE5NjgyMzQ5MmRmYmI2NDU0MWU3Y2U3ZDk2MjNiZTczMGJhN2IxMmU1NzYwNGIwZWMyIiwidGFnIjoiIn0%3D",
+      "domain": "asap.test",
+      "path": "/",
+      "expires": 1766760368.016688,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": []
+}

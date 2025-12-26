@@ -48,7 +48,7 @@ const ApplicationModal = ({
 
       setLoading(true)
 
-      await axios.put(route('v2.admin.applications.updateStatus', record.id), values)
+      await axios.put(route('admin.applications.updateStatus', record.id), values)
       message.success('Application status updated successfully')
 
       handleClose()

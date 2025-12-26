@@ -13,7 +13,19 @@
       "Bash(git push:*)",
       "Bash(grep:*)",
       "Bash(yarn add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(cat:*)",
+      "Bash(xargs:*)",
+      "Bash(npx playwright install chromium)",
+      "Bash(yarn playwright test:*)",
+      "Bash(find:*)",
+      "Bash(php artisan:*)",
+      "Bash(C:/laragon/bin/composer/composer.phar require:*)",
+      "Bash(yarn why:*)",
+      "Bash(npx playwright test:*)",
+      "Bash(php -r:*)",
+      "Bash(claude mcp add playwright npx @playwright/mcp@latest)",
+      "Bash(claude mcp add:*)"
     ]
   }
 }

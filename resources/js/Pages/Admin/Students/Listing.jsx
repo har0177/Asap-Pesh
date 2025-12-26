@@ -4,7 +4,7 @@ import { PlusOutlined } from '@ant-design/icons'
 import { router } from '@inertiajs/react'
 import PageContent from '@/Components/PageContent.jsx'
 import GlobalPageHeader from '@/Components/GlobalPageHeader.jsx'
-import DataGridTable from '@/Components/DataGridTable.jsx'
+import DataGridTable from '@/Components/DataGridTable/DataGridTable.jsx'
 import { studentColumns } from './StudentColumn.jsx'
 import StudentModal from './StudentModal.jsx'
 import usePermissions from '@/Helpers/Context/usePermissions.js'
@@ -28,13 +28,13 @@ function Listing() {
   }
 
   const handleView = (record) => {
-    router.visit(route('v2.admin.students.show', record.id))
+    router.visit(route('admin.students.show', record.id))
   }
 
   const handleUpdate = async (record) => {
     setRecordLoading(true)
     try {
-      const response = await axios.get(route('v2.admin.students.show', record.id))
+      const response = await axios.get(route('admin.students.show', record.id))
       setRecord(response.data.student || record)
       setVisible(true)
     } catch (error) {
@@ -54,7 +54,7 @@ function Listing() {
       cancelText: 'Cancel',
       onOk: async () => {
         try {
-          await axios.delete(route('v2.admin.students.destroy', record.id))
+          await axios.delete(route('admin.students.destroy', record.id))
           message.success('Student deleted successfully')
           handleRefresh()
         } catch (error) {
@@ -66,7 +66,7 @@ function Listing() {
 
   const handleRevert = async (record) => {
     try {
-      await axios.post(route('v2.admin.students.restore', record.id))
+      await axios.post(route('admin.students.restore', record.id))
       message.success('Student restored successfully')
       handleRefresh()
     } catch (error) {
@@ -93,7 +93,7 @@ function Listing() {
       <GlobalPageHeader
         title="Manage Students"
         parentPageTitle="Dashboard"
-        parentPageRoute="v2.admin.dashboard"
+        parentPageRoute="admin.dashboard"
         actionButtons={[]}
       />
       <Spin spinning={recordLoading}>
@@ -101,7 +101,7 @@ function Listing() {
           <DataGridTable
             gridRef={gridRef}
             columns={columns}
-            routeName="v2.admin.students.listing"
+            routeName="admin.students.listing"
             pageSize={20}
             pagination={true}
             setIsActive={setIsActive}

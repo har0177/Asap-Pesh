@@ -17,8 +17,8 @@ class HomeController extends Controller
 {
     public function index(): Response
     {
-        // Get active slides
-        $slides = Slide::where('status', 1)
+        // Get active slides (status is ENUM 'Show'/'Hide')
+        $slides = Slide::where('status', 'Show')
             ->orderBy('id', 'desc')
             ->get()
             ->map(function ($slide) {
@@ -52,39 +52,39 @@ class HomeController extends Controller
                 ];
             });
 
-        // Get active projects for admissions
-        $activeProjects = Project::where('status', 1)
-            ->with('diploma')
+        // Get active projects for admissions (projects table doesn't have status column)
+        $activeProjects = Project::with('diploma')
+            ->where('expiry_date', '>=', now())
             ->get()
             ->map(function ($project) {
                 return [
                     'id' => $project->id,
-                    'name' => $project->name,
+                    'name' => $project->diploma?->name ?? 'Admission Project',
                     'diploma' => $project->diploma?->name,
-                    'seats' => $project->seats,
+                    'seats' => $project->quota['total'] ?? 0,
                     'fee' => $project->fee,
-                    'deadline' => $project->deadline,
+                    'deadline' => $project->expiry_date,
                 ];
             });
 
-        // Get featured staff/employees
+        // Get featured staff/employees (status is boolean)
         $featuredStaff = Employee::where('status', 1)
             ->take(4)
             ->get()
             ->map(function ($employee) {
                 return [
                     'id' => $employee->id,
-                    'name' => $employee->name,
+                    'name' => $employee->full_name,
                     'designation' => $employee->designation,
-                    'department' => $employee->department,
+                    'department' => $employee->department ?? null,
                     'photo' => $employee->hasMedia('photos')
                         ? $employee->getFirstMediaUrl('photos')
                         : null,
                 ];
             });
 
-        // Get gallery images
-        $galleries = Gallery::where('status', 1)
+        // Get gallery images (status is ENUM 'Show'/'Hide')
+        $galleries = Gallery::where('status', 'Show')
             ->take(8)
             ->get()
             ->map(function ($gallery) {
@@ -125,18 +125,20 @@ class HomeController extends Controller
 
     public function gallery(): Response
     {
-        $galleries = Gallery::where('status', 1)
+        $galleries = Gallery::where('status', 'Show')
             ->get()
             ->map(function ($gallery) {
                 return [
                     'id' => $gallery->id,
                     'title' => $gallery->title,
-                    'description' => $gallery->description,
+                    'description' => $gallery->description ?? null,
                     'images' => $gallery->getMedia('gallery')->map(function ($media) {
                         return [
                             'id' => $media->id,
                             'url' => $media->getUrl(),
-                            'thumb' => $media->getUrl('thumb'),
+                            'thumb' => $media->hasGeneratedConversion('thumb')
+                                ? $media->getUrl('thumb')
+                                : $media->getUrl(),
                         ];
                     }),
                 ];
@@ -150,17 +152,17 @@ class HomeController extends Controller
     public function staff(): Response
     {
         $employees = Employee::where('status', 1)
-            ->orderBy('order')
+            ->orderBy('id')
             ->get()
             ->map(function ($employee) {
                 return [
                     'id' => $employee->id,
-                    'name' => $employee->name,
+                    'name' => $employee->full_name,
                     'designation' => $employee->designation,
-                    'department' => $employee->department,
-                    'qualification' => $employee->qualification,
-                    'email' => $employee->email,
-                    'phone' => $employee->phone,
+                    'department' => $employee->department ?? null,
+                    'qualification' => $employee->qualification ?? null,
+                    'email' => $employee->email ?? null,
+                    'phone' => $employee->contact_number,
                     'photo' => $employee->hasMedia('photos')
                         ? $employee->getFirstMediaUrl('photos')
                         : null,
@@ -174,13 +176,12 @@ class HomeController extends Controller
 
     public function meritList(): Response
     {
-        $projects = Project::where('status', 1)
-            ->with('diploma')
+        $projects = Project::with('diploma')
             ->get()
             ->map(function ($project) {
                 return [
                     'id' => $project->id,
-                    'name' => $project->name,
+                    'name' => $project->diploma?->name ?? 'Admission Project',
                     'diploma' => $project->diploma?->name,
                 ];
             });

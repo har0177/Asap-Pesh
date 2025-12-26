@@ -53,10 +53,10 @@ const ProjectModal = ({
       setLoading(true)
 
       if (isEdit) {
-        await axios.put(route('v2.admin.projects.update', record.id), formData)
+        await axios.put(route('admin.projects.update', record.id), formData)
         message.success('Project updated successfully')
       } else {
-        await axios.post(route('v2.admin.projects.store'), formData)
+        await axios.post(route('admin.projects.store'), formData)
         message.success('Project created successfully')
       }
 

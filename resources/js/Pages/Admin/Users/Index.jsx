@@ -36,7 +36,7 @@ export default function Index({ users, roles, filters }) {
     const handleSearch = (value) => {
         setLoading(true);
         router.get(
-            '/v2/admin/users',
+            '/admin/users',
             { ...filters, search: value, page: 1 },
             {
                 preserveState: true,
@@ -48,7 +48,7 @@ export default function Index({ users, roles, filters }) {
     const handleFilterChange = (key, value) => {
         setLoading(true);
         router.get(
-            '/v2/admin/users',
+            '/admin/users',
             { ...filters, [key]: value, page: 1 },
             {
                 preserveState: true,
@@ -60,7 +60,7 @@ export default function Index({ users, roles, filters }) {
     const handleTableChange = (pagination) => {
         setLoading(true);
         router.get(
-            '/v2/admin/users',
+            '/admin/users',
             {
                 ...filters,
                 page: pagination.current,
@@ -74,7 +74,7 @@ export default function Index({ users, roles, filters }) {
     };
 
     const handleDelete = (id) => {
-        router.delete(`/v2/admin/users/${id}`, {
+        router.delete(`/admin/users/${id}`, {
             onSuccess: () => {
                 message.success('User deleted successfully');
             },
@@ -140,10 +140,10 @@ export default function Index({ users, roles, filters }) {
             width: 150,
             render: (_, record) => (
                 <Space size="small">
-                    <Link href={`/v2/admin/users/${record.id}`}>
+                    <Link href={`/admin/users/${record.id}`}>
                         <Button type="text" size="small" icon={<EyeOutlined />} />
                     </Link>
-                    <Link href={`/v2/admin/users/${record.id}/edit`}>
+                    <Link href={`/admin/users/${record.id}/edit`}>
                         <Button type="text" size="small" icon={<EditOutlined />} />
                     </Link>
                     <Popconfirm
@@ -174,7 +174,7 @@ export default function Index({ users, roles, filters }) {
                         <Text type="secondary">Manage system users and their roles</Text>
                     </Col>
                     <Col>
-                        <Link href="/v2/admin/users/create">
+                        <Link href="/admin/users/create">
                             <Button type="primary" icon={<PlusOutlined />}>
                                 Add User
                             </Button>

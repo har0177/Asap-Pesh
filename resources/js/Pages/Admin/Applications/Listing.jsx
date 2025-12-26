@@ -3,7 +3,7 @@ import { message, Modal, Spin } from 'antd'
 import { router } from '@inertiajs/react'
 import PageContent from '@/Components/PageContent.jsx'
 import GlobalPageHeader from '@/Components/GlobalPageHeader.jsx'
-import DataGridTable from '@/Components/DataGridTable.jsx'
+import DataGridTable from '@/Components/DataGridTable/DataGridTable.jsx'
 import { applicationColumns } from './ApplicationColumn.jsx'
 import ApplicationModal from './ApplicationModal.jsx'
 import usePermissions from '@/Helpers/Context/usePermissions.js'
@@ -27,7 +27,7 @@ function Listing() {
   }
 
   const handleView = (record) => {
-    router.visit(route('v2.admin.applications.show', record.id))
+    router.visit(route('admin.applications.show', record.id))
   }
 
   const handleUpdate = async (record) => {
@@ -44,7 +44,7 @@ function Listing() {
       cancelText: 'Cancel',
       onOk: async () => {
         try {
-          await axios.delete(route('v2.admin.applications.destroy', record.id))
+          await axios.delete(route('admin.applications.destroy', record.id))
           message.success('Application deleted successfully')
           handleRefresh()
         } catch (error) {
@@ -56,7 +56,7 @@ function Listing() {
 
   const handleRevert = async (record) => {
     try {
-      await axios.post(route('v2.admin.applications.restore', record.id))
+      await axios.post(route('admin.applications.restore', record.id))
       message.success('Application restored successfully')
       handleRefresh()
     } catch (error) {
@@ -83,7 +83,7 @@ function Listing() {
       <GlobalPageHeader
         title="Manage Applications"
         parentPageTitle="Dashboard"
-        parentPageRoute="v2.admin.dashboard"
+        parentPageRoute="admin.dashboard"
         actionButtons={[]}
       />
       <Spin spinning={recordLoading}>
@@ -91,7 +91,7 @@ function Listing() {
           <DataGridTable
             gridRef={gridRef}
             columns={columns}
-            routeName="v2.admin.applications.listing"
+            routeName="admin.applications.listing"
             pageSize={20}
             pagination={true}
             setIsActive={setIsActive}

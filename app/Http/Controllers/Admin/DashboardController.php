@@ -24,7 +24,7 @@ class DashboardController extends Controller
             'paidApplications' => Application::where('status', 'Paid')->count(),
             'totalEmployees' => Employee::count(),
             'totalUsers' => User::count(),
-            'activeProjects' => Project::where('status', 1)->count(),
+            'activeProjects' => Project::where('expiry_date', '>=', now())->count(),
         ];
 
         // Get recent applications with user and project data
@@ -60,8 +60,8 @@ class DashboardController extends Controller
                 ];
             });
 
-        // Get active projects
-        $activeProjects = Project::where('status', 1)
+        // Get active projects (not expired)
+        $activeProjects = Project::where('expiry_date', '>=', now())
             ->with('diploma')
             ->latest()
             ->take(5)
@@ -69,9 +69,9 @@ class DashboardController extends Controller
             ->map(function ($project) {
                 return [
                     'id' => $project->id,
-                    'name' => $project->name,
+                    'name' => $project->diploma?->name ?? 'Admission Project',
                     'diploma' => $project->diploma?->name ?? 'N/A',
-                    'seats' => $project->seats ?? 0,
+                    'seats' => $project->quota['total'] ?? 0,
                     'applications_count' => $project->applications()->count(),
                 ];
             });

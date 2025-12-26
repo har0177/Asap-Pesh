@@ -34,7 +34,7 @@ export default function AuthLayout({ children, title = 'Welcome', subtitle }) {
                     }}
                 >
                     <div style={{ textAlign: 'center', marginBottom: 24 }}>
-                        <Link href="/v2">
+                        <Link href="/">
                             <Title level={2} style={{ marginBottom: 8, color: '#001529' }}>
                                 ASA Peshawar
                             </Title>

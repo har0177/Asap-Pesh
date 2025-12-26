@@ -27,7 +27,19 @@ class User extends Authenticatable implements HasMedia
   use HasPermissions;
   use SoftDeletes;
   use Filterable;
-  
+
+  /**
+   * Searchable fields for the filter trait
+   */
+  public array $searchable = [
+      'first_name',
+      'last_name',
+      'email',
+      'phone',
+      'cnic',
+      'role.name',
+  ];
+
   /**
    * The attributes that are mass assignable.
    * @var array<int, string>

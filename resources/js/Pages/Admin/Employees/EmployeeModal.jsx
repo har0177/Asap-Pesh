@@ -50,10 +50,10 @@ const EmployeeModal = ({
       setLoading(true)
 
       if (isEdit) {
-        await axios.put(route('v2.admin.employees.update', record.id), formData)
+        await axios.put(route('admin.employees.update', record.id), formData)
         message.success('Employee updated successfully')
       } else {
-        await axios.post(route('v2.admin.employees.store'), formData)
+        await axios.post(route('admin.employees.store'), formData)
         message.success('Employee created successfully')
       }
 

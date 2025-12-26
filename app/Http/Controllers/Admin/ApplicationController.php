@@ -2,155 +2,50 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Helpers\Notify;
+use App\Helpers\Response;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\ApplicationResource;
 use App\Models\Application;
-use App\Models\Project;
+use App\Traits\HasListing;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Inertia\Response;
+use Inertia\Response as InertiaResponse;
 
 class ApplicationController extends Controller
 {
+    use HasListing;
+
     /**
      * JSON listing for DataGridTable (AG Grid)
      */
     public function listing(Request $request): JsonResponse
     {
-        $query = Application::with(['user', 'project.diploma']);
+        try {
+            $result = $this->getListing(
+                $request,
+                Application::class,
+                ['user', 'project.diploma'],
+                ApplicationResource::class
+            );
 
-        // Handle soft deleted
-        if ($request->boolean('soft_deleted')) {
-            $query->onlyTrashed();
-        }
-
-        // Handle search
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('challan_no', 'like', "%{$search}%")
-                    ->orWhereHas('user', function ($uq) use ($search) {
-                        $uq->where('first_name', 'like', "%{$search}%")
-                            ->orWhere('last_name', 'like', "%{$search}%")
-                            ->orWhere('email', 'like', "%{$search}%")
-                            ->orWhere('phone', 'like', "%{$search}%")
-                            ->orWhere('cnic', 'like', "%{$search}%");
-                    })
-                    ->orWhereHas('project', function ($pq) use ($search) {
-                        $pq->where('name', 'like', "%{$search}%");
-                    });
-            });
-        }
-
-        // Handle filterTree from GlobalFilter
-        if ($request->filled('filterTree')) {
-            $filterTree = $request->filterTree;
-            if (!empty($filterTree['conditions'])) {
-                $this->applyFilterTree($query, $filterTree);
+            if ($request->boolean('export')) {
+                return $result;
             }
+
+            return response()->json($result);
+        } catch (\Throwable $e) {
+            return Response::error($e->getMessage(), 500);
         }
-
-        // Handle sorting
-        $sortModel = $request->input('sort', []);
-        if (!empty($sortModel)) {
-            foreach ($sortModel as $sort) {
-                $colId = $sort['colId'] ?? null;
-                $sortDirection = $sort['sort'] ?? 'asc';
-                if ($colId) {
-                    $query->orderBy($colId, $sortDirection);
-                }
-            }
-        } else {
-            $query->latest();
-        }
-
-        $pageSize = $request->input('pageSize', 20);
-        $currentPage = $request->input('current', 1);
-
-        $applications = $query->paginate($pageSize, ['*'], 'page', $currentPage);
-
-        $data = $applications->getCollection()->map(function ($application) {
-            return [
-                'id' => $application->id,
-                'user_id' => $application->user_id,
-                'project_id' => $application->project_id,
-                'user' => [
-                    'id' => $application->user?->id,
-                    'full_name' => $application->user?->full_name,
-                    'email' => $application->user?->email,
-                    'phone' => $application->user?->phone,
-                    'cnic' => $application->user?->cnic,
-                    'avatar' => $application->user?->avatar,
-                ],
-                'project' => [
-                    'id' => $application->project?->id,
-                    'name' => $application->project?->name,
-                    'diploma' => [
-                        'id' => $application->project?->diploma?->id,
-                        'name' => $application->project?->diploma?->name,
-                    ],
-                ],
-                'status' => $application->status,
-                'quota' => $application->quotaName ?? [],
-                'challan_no' => $application->challan_no,
-                'remarks' => $application->remarks,
-                'created_at' => $application->created_at?->format('Y-m-d'),
-                'updated_at' => $application->updated_at?->format('Y-m-d'),
-                'deleted_at' => $application->deleted_at?->format('Y-m-d'),
-            ];
-        });
-
-        return response()->json([
-            'success' => true,
-            'data' => $data,
-            'total' => $applications->total(),
-            'pagination' => [
-                'current_page' => $applications->currentPage(),
-                'last_page' => $applications->lastPage(),
-                'per_page' => $applications->perPage(),
-                'total' => $applications->total(),
-            ],
-        ]);
     }
 
-    /**
-     * Apply filter tree from GlobalFilter component
-     */
-    protected function applyFilterTree($query, array $filterTree): void
+    public function index(Request $request): InertiaResponse
     {
-        $type = $filterTree['type'] ?? 'AND';
-        $conditions = $filterTree['conditions'] ?? [];
-
-        $query->where(function ($q) use ($conditions, $type) {
-            foreach ($conditions as $condition) {
-                if (isset($condition['conditions'])) {
-                    $this->applyFilterTree($q, $condition);
-                } else {
-                    $field = $condition['field'] ?? null;
-                    $operator = $condition['operator'] ?? 'is';
-                    $value = $condition['value'] ?? null;
-
-                    if ($field && $value !== null) {
-                        $method = strtolower($type) === 'or' ? 'orWhere' : 'where';
-
-                        if ($field === 'project_id' || $field === 'status') {
-                            $q->$method($field, is_array($value) ? $value[0] : $value);
-                        } else {
-                            $q->$method($field, 'like', "%{$value}%");
-                        }
-                    }
-                }
-            }
-        });
-    }
-
-    public function index(Request $request): Response
-    {
-        // Render the new AG Grid listing page
         return Inertia::render('Admin/Applications/Listing');
     }
 
-    public function show(Application $application): Response
+    public function show(Request $request, Application $application)
     {
         $application->load([
             'user.student.diploma',
@@ -159,59 +54,14 @@ class ApplicationController extends Controller
             'project.diploma',
         ]);
 
+        if ($request->wantsJson()) {
+            return Response::success([
+                'application' => new ApplicationResource($application),
+            ]);
+        }
+
         return Inertia::render('Admin/Applications/Show', [
-            'application' => [
-                'id' => $application->id,
-                'status' => $application->status,
-                'challan_no' => $application->challan_no,
-                'quota' => $application->quotaName ?? [],
-                'remarks' => $application->remarks,
-                'created_at' => $application->created_at?->format('Y-m-d H:i'),
-                'updated_at' => $application->updated_at?->format('Y-m-d H:i'),
-                'user' => [
-                    'id' => $application->user?->id,
-                    'full_name' => $application->user?->full_name,
-                    'email' => $application->user?->email,
-                    'phone' => $application->user?->phone,
-                    'cnic' => $application->user?->cnic,
-                    'avatar' => $application->user?->avatar,
-                ],
-                'student' => $application->user?->student ? [
-                    'father_name' => $application->user->student->father_name,
-                    'date_of_birth' => $application->user->student->date_of_birth,
-                    'address' => $application->user->student->address,
-                    'diploma' => $application->user->student->diploma?->name,
-                    'district' => $application->user->student->district?->name,
-                ] : null,
-                'education' => $application->user?->education?->map(function ($edu) {
-                    return [
-                        'id' => $edu->id,
-                        'degree' => $edu->degree,
-                        'board' => $edu->board,
-                        'year' => $edu->year,
-                        'total_marks' => $edu->total_marks,
-                        'obtained_marks' => $edu->obtained_marks,
-                        'percentage' => $edu->total_marks > 0
-                            ? round(($edu->obtained_marks / $edu->total_marks) * 100, 2)
-                            : 0,
-                    ];
-                }) ?? [],
-                'project' => [
-                    'id' => $application->project?->id,
-                    'name' => $application->project?->name,
-                    'diploma' => $application->project?->diploma?->name,
-                    'seats' => $application->project?->seats,
-                    'fee' => $application->project?->fee,
-                ],
-                'documents' => $application->getMedia('documents')->map(function ($media) {
-                    return [
-                        'id' => $media->id,
-                        'name' => $media->name,
-                        'url' => $media->getUrl(),
-                        'type' => $media->mime_type,
-                    ];
-                }),
-            ],
+            'application' => new ApplicationResource($application),
         ]);
     }
 
@@ -224,10 +74,11 @@ class ApplicationController extends Controller
 
         $application->update($validated);
 
+        Notify::success('Application status updated successfully.');
+
         if ($request->wantsJson()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Application status updated successfully.',
+            return Response::success([
+                'application' => new ApplicationResource($application->load(['user', 'project'])),
             ]);
         }
 
@@ -239,14 +90,13 @@ class ApplicationController extends Controller
     {
         $application->delete();
 
+        Notify::success('Application deleted successfully.');
+
         if ($request->wantsJson()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Application deleted successfully.',
-            ]);
+            return Response::success();
         }
 
-        return redirect()->route('v2.admin.applications.index')
+        return redirect()->route('admin.applications.index')
             ->with('success', 'Application deleted successfully.');
     }
 
@@ -255,21 +105,21 @@ class ApplicationController extends Controller
         $application = Application::withTrashed()->findOrFail($id);
         $application->restore();
 
+        Notify::success('Application restored successfully.');
+
         if ($request->wantsJson()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Application restored successfully.',
+            return Response::success([
+                'application' => new ApplicationResource($application->load(['user', 'project'])),
             ]);
         }
 
-        return redirect()->route('v2.admin.applications.index')
+        return redirect()->route('admin.applications.index')
             ->with('success', 'Application restored successfully.');
     }
 
     public function export(Request $request)
     {
-        // This will use the existing ApplicationsExport class
-        // For now, redirect back with message
+        // Export will be handled by HasListing trait when export=true is passed
         return redirect()->back()
             ->with('info', 'Export functionality will be implemented.');
     }

@@ -1,36 +1,162 @@
 import { message, notification } from 'antd'
 
-// API Response Handlers
+// API Response Handlers - SparkCRM Style
 export const handleApiError = (error) => {
-  const errorMessage = error?.response?.data?.message || error?.message || 'An error occurred'
-
-  if (error?.response?.status === 422) {
-    // Validation errors
-    const errors = error?.response?.data?.errors
-    if (errors) {
-      Object.values(errors).forEach((errorArray) => {
-        if (Array.isArray(errorArray)) {
-          errorArray.forEach((err) => message.error(err))
-        }
+  if (!error || !error.response || !error.response.data) {
+    if (error?.errorFields) {
+      // Form validation errors
+      error.errorFields.forEach(({ name, errors }) => {
+        message.error(errors.join(', '))
       })
     } else {
-      message.error(errorMessage)
+      message.error(error?.message || 'An error occurred')
     }
-  } else if (error?.response?.status === 403) {
-    message.error('You do not have permission to perform this action')
-  } else if (error?.response?.status === 404) {
-    message.error('Resource not found')
-  } else if (error?.response?.status === 401) {
+    return
+  }
+
+  const { errors, message: errorMessage } = error.response.data
+  const status = error.response.status
+
+  // Handle specific status codes
+  if (status === 401) {
     message.error('Session expired. Please login again.')
-    window.location.href = '/login'
-  } else {
+    setTimeout(() => {
+      window.location.href = '/login'
+    }, 1000)
+    return
+  }
+
+  if (status === 403) {
+    message.error('You do not have permission to perform this action')
+    return
+  }
+
+  if (status === 404) {
+    message.error('Resource not found')
+    return
+  }
+
+  // Handle validation errors (422)
+  if (errors && typeof errors === 'object') {
+    Object.keys(errors).forEach(field => {
+      const fieldErrors = errors[field]
+      if (Array.isArray(fieldErrors)) {
+        fieldErrors.forEach(err => message.error(err))
+      } else {
+        message.error(`${fieldErrors}`)
+      }
+    })
+  } else if (errorMessage) {
     message.error(errorMessage)
+  } else {
+    message.error('An error occurred')
   }
 }
 
 export const handleApiSuccess = (response, customMessage = null) => {
-  const successMessage = customMessage || response?.data?.message || 'Operation successful'
-  message.success(successMessage)
+  if (!response || !response.data) {
+    if (customMessage) {
+      message.success(customMessage)
+    }
+    return
+  }
+
+  const { notifications, message: successMessage } = response.data
+
+  // Handle notifications array (SparkCRM style)
+  if (notifications && notifications.length > 0) {
+    notifications
+      .filter(notification => notification.type === 'success' && notification.message)
+      .forEach(notification => {
+        message.success(notification.message)
+      })
+
+    notifications
+      .filter(notification => notification.type === 'error' && notification.message)
+      .forEach(notification => {
+        message.error(notification.message)
+      })
+
+    notifications
+      .filter(notification => notification.type === 'warning' && notification.message)
+      .forEach(notification => {
+        message.warning(notification.message)
+      })
+
+    notifications
+      .filter(notification => notification.type === 'info' && notification.message)
+      .forEach(notification => {
+        message.info(notification.message)
+      })
+  } else if (customMessage) {
+    message.success(customMessage)
+  } else if (successMessage) {
+    message.success(successMessage)
+  }
+}
+
+// Utility functions
+export const isEmpty = (value) => {
+  if (value == null) return true
+  if (typeof value === 'number' && value === 0) return true
+  if (typeof value === 'string' || Array.isArray(value)) return value.length === 0
+  if (typeof value.size === 'number') return value.size === 0
+  if (typeof value === 'object') return Object.keys(value).length === 0
+  return false
+}
+
+export const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms))
+
+export const formatCurrency = (number, fractionDigits = 0, prefix = 'Rs.') => {
+  if (number === undefined || number === null || isNaN(number)) {
+    number = 0
+  }
+  const formattedNumber = Number(number).toFixed(fractionDigits)
+  const [integerPart, decimalPart] = formattedNumber.split('.')
+  const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+  return prefix + ' ' + formattedInteger + (decimalPart ? '.' + decimalPart : '')
+}
+
+export const formatPhoneNumber = (number) => {
+  if (isEmpty(number)) return ''
+  const digits = number.toString().replace(/\D/g, '')
+  if (digits.length === 11 && digits.startsWith('0')) {
+    return `${digits.slice(0, 4)}-${digits.slice(4)}`
+  }
+  if (digits.length === 10) {
+    return `${digits.slice(0, 3)}-${digits.slice(3)}`
+  }
+  return digits
+}
+
+export const onlyNumbers = (value) => /^\d*$/.test(value)
+
+export const filterNumber = (string) => {
+  if (isEmpty(string)) return 0
+  string = string.toString().replace(/[^\d.]+/g, '')
+  if (isEmpty(string)) return string
+  return parseFloat(string)
+}
+
+export const getInitials = (name) => {
+  if (!name || typeof name !== 'string') return '?'
+  const nameParts = name.trim().split(' ')
+  const firstInitial = nameParts[0]?.[0] || ''
+  const secondInitial = nameParts[1]?.[0] || ''
+  return `${firstInitial}${secondInitial}`.toUpperCase()
+}
+
+export const stringToColor = (str) => {
+  if (!str) return '#1890ff'
+  const colors = [
+    '#f56a00', '#7265e6', '#ffbf00', '#00a2ae', '#87d068',
+    '#1890ff', '#722ed1', '#eb2f96', '#13c2c2', '#fa541c',
+  ]
+  let hash = 0
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash)
+  }
+  return colors[Math.abs(hash) % colors.length]
 }
 
 // Hex to RGBA converter

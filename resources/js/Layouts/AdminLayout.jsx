@@ -9,14 +9,12 @@ import {
     Button,
     Typography,
     theme,
-    ConfigProvider,
 } from 'antd';
 import {
     DashboardOutlined,
     UserOutlined,
     TeamOutlined,
     FileTextOutlined,
-    ProjectOutlined,
     SettingOutlined,
     BellOutlined,
     MenuFoldOutlined,
@@ -26,39 +24,11 @@ import {
     TrophyOutlined,
     MessageOutlined,
 } from '@ant-design/icons';
-import { RecoilRoot, useSetRecoilState } from 'recoil';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useSetRecoilState } from 'recoil';
 import { userAtom, permissionsAtom } from '@/Helpers/atom.js';
 
 const { Header, Sider, Content, Footer } = Layout;
 const { Text } = Typography;
-
-// Create QueryClient instance
-const queryClient = new QueryClient({
-    defaultOptions: {
-        queries: {
-            staleTime: 5 * 60 * 1000, // 5 minutes
-            refetchOnWindowFocus: false,
-        },
-    },
-});
-
-// Inner component that uses Recoil hooks
-function AdminLayoutInner({ children }) {
-    const { auth } = usePage().props;
-    const setUser = useSetRecoilState(userAtom);
-    const setPermissions = useSetRecoilState(permissionsAtom);
-
-    // Set user and permissions in Recoil state
-    useEffect(() => {
-        if (auth?.user) {
-            setUser(auth.user);
-            setPermissions(auth.permissions || []);
-        }
-    }, [auth?.user, auth?.permissions, setUser, setPermissions]);
-
-    return <AdminLayoutContent>{children}</AdminLayoutContent>;
-}
 
 function getItem(label, key, icon, children) {
     return {
@@ -70,34 +40,43 @@ function getItem(label, key, icon, children) {
 }
 
 const menuItems = [
-    getItem(<Link href="/v2/admin/dashboard">Dashboard</Link>, 'dashboard', <DashboardOutlined />),
+    getItem(<Link href="/admin/dashboard">Dashboard</Link>, 'dashboard', <DashboardOutlined />),
     getItem('Users & Roles', 'users-roles', <UserOutlined />, [
-        getItem(<Link href="/v2/admin/users">Users</Link>, 'users'),
-        getItem(<Link href="/v2/admin/roles">Roles</Link>, 'roles'),
+        getItem(<Link href="/admin/users">Users</Link>, 'users'),
+        getItem(<Link href="/admin/roles">Roles</Link>, 'roles'),
     ]),
-    getItem(<Link href="/v2/admin/students">Students</Link>, 'students', <TeamOutlined />),
-    getItem(<Link href="/v2/admin/employees">Employees</Link>, 'employees', <ProfileOutlined />),
+    getItem(<Link href="/admin/students">Students</Link>, 'students', <TeamOutlined />),
+    getItem(<Link href="/admin/employees">Employees</Link>, 'employees', <ProfileOutlined />),
     getItem('Admissions', 'admissions', <TrophyOutlined />, [
-        getItem(<Link href="/v2/admin/projects">Projects</Link>, 'projects'),
-        getItem(<Link href="/v2/admin/applications">Applications</Link>, 'applications'),
-        getItem(<Link href="/v2/admin/merit-lists">Merit Lists</Link>, 'merit-lists'),
+        getItem(<Link href="/admin/projects">Projects</Link>, 'projects'),
+        getItem(<Link href="/admin/applications">Applications</Link>, 'applications'),
+        getItem(<Link href="/admin/merit-lists">Merit Lists</Link>, 'merit-lists'),
     ]),
-    getItem('Content', 'content', <FileTextOutlined />, [
-        getItem(<Link href="/v2/admin/slides">Slides</Link>, 'slides'),
-        getItem(<Link href="/v2/admin/gallery">Gallery</Link>, 'gallery'),
-        getItem(<Link href="/v2/admin/events">Events</Link>, 'events'),
-        getItem(<Link href="/v2/admin/contents">Pages</Link>, 'pages'),
+    getItem('Content', 'cms', <FileTextOutlined />, [
+        getItem(<Link href="/admin/slides">Slides</Link>, 'slides'),
+        getItem(<Link href="/admin/gallery">Gallery</Link>, 'gallery'),
+        getItem(<Link href="/admin/content">Pages</Link>, 'content'),
     ]),
-    getItem(<Link href="/v2/admin/taxonomies">Settings</Link>, 'taxonomies', <SettingOutlined />),
-    getItem(<Link href="/v2/admin/send-sms">SMS</Link>, 'sms', <MessageOutlined />),
+    getItem(<Link href="/admin/taxonomies">Settings</Link>, 'taxonomies', <SettingOutlined />),
+    getItem(<Link href="/admin/send-sms">SMS</Link>, 'sms', <MessageOutlined />),
 ];
 
-function AdminLayoutContent({ children }) {
+export default function AdminLayout({ children }) {
     const { auth, flash } = usePage().props;
+    const setUser = useSetRecoilState(userAtom);
+    const setPermissions = useSetRecoilState(permissionsAtom);
     const [collapsed, setCollapsed] = useState(false);
     const {
         token: { colorBgContainer, borderRadiusLG },
     } = theme.useToken();
+
+    // Set user and permissions in Recoil state
+    useEffect(() => {
+        if (auth?.user) {
+            setUser(auth.user);
+            setPermissions(auth.permissions || []);
+        }
+    }, [auth?.user, auth?.permissions, setUser, setPermissions]);
 
     const userMenuItems = [
         {
@@ -229,24 +208,5 @@ function AdminLayoutContent({ children }) {
                 </Footer>
             </Layout>
         </Layout>
-    );
-}
-
-// Main export with providers
-export default function AdminLayout({ children }) {
-    return (
-        <RecoilRoot>
-            <QueryClientProvider client={queryClient}>
-                <ConfigProvider
-                    theme={{
-                        token: {
-                            colorPrimary: '#1677ff',
-                        },
-                    }}
-                >
-                    <AdminLayoutInner>{children}</AdminLayoutInner>
-                </ConfigProvider>
-            </QueryClientProvider>
-        </RecoilRoot>
     );
 }

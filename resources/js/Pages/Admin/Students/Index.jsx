@@ -40,7 +40,7 @@ export default function Index({
     const handleSearch = (value) => {
         setLoading(true);
         router.get(
-            '/v2/admin/students',
+            '/admin/students',
             { ...filters, search: value, page: 1 },
             {
                 preserveState: true,
@@ -52,7 +52,7 @@ export default function Index({
     const handleFilterChange = (key, value) => {
         setLoading(true);
         router.get(
-            '/v2/admin/students',
+            '/admin/students',
             { ...filters, [key]: value, page: 1 },
             {
                 preserveState: true,
@@ -64,7 +64,7 @@ export default function Index({
     const handleTableChange = (pagination) => {
         setLoading(true);
         router.get(
-            '/v2/admin/students',
+            '/admin/students',
             {
                 ...filters,
                 page: pagination.current,
@@ -78,7 +78,7 @@ export default function Index({
     };
 
     const handleDelete = (id) => {
-        router.delete(`/v2/admin/students/${id}`, {
+        router.delete(`/admin/students/${id}`, {
             onSuccess: () => {
                 message.success('Student deleted successfully');
             },
@@ -151,10 +151,10 @@ export default function Index({
             width: 120,
             render: (_, record) => (
                 <Space size="small">
-                    <Link href={`/v2/admin/students/${record.id}`}>
+                    <Link href={`/admin/students/${record.id}`}>
                         <Button type="text" size="small" icon={<EyeOutlined />} />
                     </Link>
-                    <Link href={`/v2/admin/students/${record.id}/edit`}>
+                    <Link href={`/admin/students/${record.id}/edit`}>
                         <Button type="text" size="small" icon={<EditOutlined />} />
                     </Link>
                     <Popconfirm

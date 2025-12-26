@@ -37,7 +37,7 @@ export default function Index({ projects, diplomas, filters }) {
     const handleSearch = (value) => {
         setLoading(true);
         router.get(
-            '/v2/admin/projects',
+            '/admin/projects',
             { ...filters, search: value, page: 1 },
             {
                 preserveState: true,
@@ -49,7 +49,7 @@ export default function Index({ projects, diplomas, filters }) {
     const handleFilterChange = (key, value) => {
         setLoading(true);
         router.get(
-            '/v2/admin/projects',
+            '/admin/projects',
             { ...filters, [key]: value, page: 1 },
             {
                 preserveState: true,
@@ -61,7 +61,7 @@ export default function Index({ projects, diplomas, filters }) {
     const handleTableChange = (pagination) => {
         setLoading(true);
         router.get(
-            '/v2/admin/projects',
+            '/admin/projects',
             {
                 ...filters,
                 page: pagination.current,
@@ -75,7 +75,7 @@ export default function Index({ projects, diplomas, filters }) {
     };
 
     const handleDelete = (id) => {
-        router.delete(`/v2/admin/projects/${id}`, {
+        router.delete(`/admin/projects/${id}`, {
             onSuccess: () => {
                 message.success('Project deleted successfully');
             },
@@ -185,10 +185,10 @@ export default function Index({ projects, diplomas, filters }) {
             width: 150,
             render: (_, record) => (
                 <Space size="small">
-                    <Link href={`/v2/admin/projects/${record.id}`}>
+                    <Link href={`/admin/projects/${record.id}`}>
                         <Button type="text" size="small" icon={<EyeOutlined />} />
                     </Link>
-                    <Link href={`/v2/admin/projects/${record.id}/edit`}>
+                    <Link href={`/admin/projects/${record.id}/edit`}>
                         <Button type="text" size="small" icon={<EditOutlined />} />
                     </Link>
                     <Popconfirm
@@ -225,7 +225,7 @@ export default function Index({ projects, diplomas, filters }) {
                         <Text type="secondary">Manage admission projects and intakes</Text>
                     </Col>
                     <Col>
-                        <Link href="/v2/admin/projects/create">
+                        <Link href="/admin/projects/create">
                             <Button type="primary" icon={<PlusOutlined />}>
                                 Add Project
                             </Button>

@@ -19,7 +19,8 @@
         "livewire/livewire": "^3.0@beta",
         "maatwebsite/excel": "^3.1",
         "plank/laravel-metable": "^5.4",
-        "spatie/laravel-medialibrary": "^10.0.0"
+        "spatie/laravel-medialibrary": "^10.0.0",
+        "tightenco/ziggy": "^2.6"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",

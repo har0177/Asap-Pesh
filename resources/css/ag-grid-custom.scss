@@ -1,0 +1,36 @@
+// Custom AG Grid Styles
+
+.ag-theme-alpine,
+.ag-theme-alpine-dark {
+  --ag-header-height: 40px;
+  --ag-row-height: 45px;
+  --ag-font-size: 13px;
+
+  .ag-header-cell-label {
+    font-weight: 600;
+  }
+
+  .ag-cell {
+    display: flex;
+    align-items: center;
+  }
+
+  .ag-row {
+    transition: background-color 0.2s;
+  }
+
+  .ag-row:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+  }
+
+  .ag-paging-panel {
+    justify-content: flex-end;
+    padding: 8px 16px;
+  }
+}
+
+.ag-theme-alpine-dark {
+  .ag-row:hover {
+    background-color: rgba(255, 255, 255, 0.04);
+  }
+}

@@ -102,7 +102,7 @@ export default function Welcome({
                                     </Link>
                                 </Button>
                                 <Button size="large" ghost>
-                                    <Link href="/v2/about" style={{ color: 'inherit' }}>
+                                    <Link href="/about" style={{ color: 'inherit' }}>
                                         Learn More
                                     </Link>
                                 </Button>
@@ -202,7 +202,7 @@ export default function Welcome({
                     <Row gutter={[24, 24]}>
                         {events.slice(0, 3).map((event) => (
                             <Col xs={24} md={8} key={event.id}>
-                                <Link href={`/v2/event/${event.slug}`}>
+                                <Link href={`/event/${event.slug}`}>
                                     <Card
                                         hoverable
                                         cover={
@@ -250,7 +250,7 @@ export default function Welcome({
                     </Row>
 
                     <div style={{ textAlign: 'center', marginTop: 32 }}>
-                        <Link href="/v2/events">
+                        <Link href="/events">
                             <Button type="primary" ghost>
                                 View All News & Events <RightOutlined />
                             </Button>
@@ -298,7 +298,7 @@ export default function Welcome({
                     </Row>
 
                     <div style={{ textAlign: 'center', marginTop: 32 }}>
-                        <Link href="/v2/gallery">
+                        <Link href="/gallery">
                             <Button type="primary" ghost>
                                 View Full Gallery <RightOutlined />
                             </Button>
@@ -344,7 +344,7 @@ export default function Welcome({
                     </Row>
 
                     <div style={{ textAlign: 'center', marginTop: 32 }}>
-                        <Link href="/v2/staff">
+                        <Link href="/staff">
                             <Button type="primary" ghost>
                                 View All Staff <RightOutlined />
                             </Button>
@@ -383,7 +383,7 @@ export default function Welcome({
                         </Link>
                     </Button>
                     <Button size="large" ghost>
-                        <Link href="/v2/contact" style={{ color: '#fff' }}>
+                        <Link href="/contact" style={{ color: '#fff' }}>
                             Contact Us
                         </Link>
                     </Button>

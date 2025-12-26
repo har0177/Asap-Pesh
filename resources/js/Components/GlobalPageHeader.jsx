@@ -11,7 +11,7 @@ const { Title } = Typography
 const GlobalPageHeader = ({
   title,
   parentPageTitle,
-  parentPageRoute = 'v2.admin.dashboard',
+  parentPageRoute = 'admin.dashboard',
   actionButtons = [],
   extraContent = null,
   breadcrumbItems = null,

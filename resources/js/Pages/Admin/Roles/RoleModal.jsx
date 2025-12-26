@@ -41,10 +41,10 @@ const RoleModal = ({
       setLoading(true)
 
       if (isEdit) {
-        await axios.put(route('v2.admin.roles.update', record.id), values)
+        await axios.put(route('admin.roles.update', record.id), values)
         message.success('Role updated successfully')
       } else {
-        await axios.post(route('v2.admin.roles.store'), values)
+        await axios.post(route('admin.roles.store'), values)
         message.success('Role created successfully')
       }
 

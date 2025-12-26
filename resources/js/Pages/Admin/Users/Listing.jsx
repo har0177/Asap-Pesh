@@ -4,7 +4,7 @@ import { PlusOutlined } from '@ant-design/icons'
 import { router } from '@inertiajs/react'
 import PageContent from '@/Components/PageContent.jsx'
 import GlobalPageHeader from '@/Components/GlobalPageHeader.jsx'
-import DataGridTable from '@/Components/DataGridTable.jsx'
+import DataGridTable from '@/Components/DataGridTable/DataGridTable.jsx'
 import { userColumns } from './UserColumn.jsx'
 import UserModal from './UserModal.jsx'
 import usePermissions from '@/Helpers/Context/usePermissions.js'
@@ -28,13 +28,13 @@ function Listing() {
   }
 
   const handleView = (record) => {
-    router.visit(route('v2.admin.users.show', record.id))
+    router.visit(route('admin.users.show', record.id))
   }
 
   const handleUpdate = async (record) => {
     setRecordLoading(true)
     try {
-      const response = await axios.get(route('v2.admin.users.show', record.id))
+      const response = await axios.get(route('admin.users.show', record.id))
       setRecord(response.data.user || record)
       setVisible(true)
     } catch (error) {
@@ -59,7 +59,7 @@ function Listing() {
       cancelText: 'Cancel',
       onOk: async () => {
         try {
-          await axios.delete(route('v2.admin.users.destroy', record.id))
+          await axios.delete(route('admin.users.destroy', record.id))
           message.success('User deleted successfully')
           handleRefresh()
         } catch (error) {
@@ -71,7 +71,7 @@ function Listing() {
 
   const handleRevert = async (record) => {
     try {
-      await axios.post(route('v2.admin.users.restore', record.id))
+      await axios.post(route('admin.users.restore', record.id))
       message.success('User restored successfully')
       handleRefresh()
     } catch (error) {
@@ -98,7 +98,7 @@ function Listing() {
       <GlobalPageHeader
         title="Manage Users"
         parentPageTitle="Dashboard"
-        parentPageRoute="v2.admin.dashboard"
+        parentPageRoute="admin.dashboard"
         actionButtons={[
           {
             title: 'Add User',
@@ -114,7 +114,7 @@ function Listing() {
           <DataGridTable
             gridRef={gridRef}
             columns={columns}
-            routeName="v2.admin.users.listing"
+            routeName="admin.users.listing"
             pageSize={20}
             pagination={true}
             setIsActive={setIsActive}

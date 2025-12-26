@@ -2,15 +2,21 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Helpers\Notify;
+use App\Helpers\Response;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\RoleResource;
 use App\Models\Role;
+use App\Traits\HasListing;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Inertia\Response;
+use Inertia\Response as InertiaResponse;
 
 class RoleController extends Controller
 {
+    use HasListing;
+
     // Available permissions in the system
     protected array $availablePermissions = [
         'users' => ['manage users', 'add user', 'edit user', 'view user', 'delete user'],
@@ -28,71 +34,35 @@ class RoleController extends Controller
      */
     public function listing(Request $request): JsonResponse
     {
-        $query = Role::withCount('users');
+        try {
+            $result = $this->getListing(
+                $request,
+                Role::class,
+                [],
+                RoleResource::class,
+                [
+                    'withCount' => ['users'],
+                ]
+            );
 
-        // Handle search
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%");
-            });
-        }
-
-        // Handle sorting
-        $sortModel = $request->input('sort', []);
-        if (!empty($sortModel)) {
-            foreach ($sortModel as $sort) {
-                $colId = $sort['colId'] ?? null;
-                $sortDirection = $sort['sort'] ?? 'asc';
-                if ($colId) {
-                    $query->orderBy($colId, $sortDirection);
-                }
+            if ($request->boolean('export')) {
+                return $result;
             }
-        } else {
-            $query->latest();
+
+            return response()->json($result);
+        } catch (\Throwable $e) {
+            return Response::error($e->getMessage(), 500);
         }
-
-        $pageSize = $request->input('pageSize', 20);
-        $currentPage = $request->input('current', 1);
-
-        $roles = $query->paginate($pageSize, ['*'], 'page', $currentPage);
-
-        $data = $roles->getCollection()->map(function ($role) {
-            return [
-                'id' => $role->id,
-                'name' => $role->name,
-                'slug' => $role->slug,
-                'description' => $role->description,
-                'permissions' => $role->permissions ?? [],
-                'permissions_count' => is_array($role->permissions) ? count($role->permissions) : 0,
-                'users_count' => $role->users_count ?? 0,
-                'created_at' => $role->created_at?->format('Y-m-d'),
-                'updated_at' => $role->updated_at?->format('Y-m-d'),
-            ];
-        });
-
-        return response()->json([
-            'success' => true,
-            'data' => $data,
-            'total' => $roles->total(),
-            'pagination' => [
-                'current_page' => $roles->currentPage(),
-                'last_page' => $roles->lastPage(),
-                'per_page' => $roles->perPage(),
-                'total' => $roles->total(),
-            ],
-        ]);
     }
 
-    public function index(Request $request): Response
+    public function index(Request $request): InertiaResponse
     {
         return Inertia::render('Admin/Roles/Listing', [
             'availablePermissions' => $this->availablePermissions,
         ]);
     }
 
-    public function create(): Response
+    public function create(): InertiaResponse
     {
         return Inertia::render('Admin/Roles/Create', [
             'availablePermissions' => $this->availablePermissions,
@@ -109,45 +79,39 @@ class RoleController extends Controller
 
         $role = Role::create($validated);
 
+        Notify::success('Role created successfully.');
+
         if ($request->wantsJson()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Role created successfully.',
-                'role' => $role,
+            return Response::success([
+                'role' => new RoleResource($role),
             ]);
         }
 
-        return redirect()->route('v2.admin.roles.index')
+        return redirect()->route('admin.roles.index')
             ->with('success', 'Role created successfully.');
     }
 
-    public function show(Role $role)
+    public function show(Request $request, Role $role)
     {
         $role->loadCount('users');
 
+        if ($request->wantsJson()) {
+            return Response::success([
+                'role' => new RoleResource($role),
+                'availablePermissions' => $this->availablePermissions,
+            ]);
+        }
+
         return Inertia::render('Admin/Roles/Show', [
-            'role' => [
-                'id' => $role->id,
-                'name' => $role->name,
-                'slug' => $role->slug,
-                'description' => $role->description,
-                'permissions' => $role->permissions ?? [],
-                'users_count' => $role->users_count,
-                'created_at' => $role->created_at?->format('Y-m-d H:i'),
-            ],
+            'role' => new RoleResource($role),
             'availablePermissions' => $this->availablePermissions,
         ]);
     }
 
-    public function edit(Role $role): Response
+    public function edit(Role $role): InertiaResponse
     {
         return Inertia::render('Admin/Roles/Edit', [
-            'role' => [
-                'id' => $role->id,
-                'name' => $role->name,
-                'description' => $role->description,
-                'permissions' => $role->permissions ?? [],
-            ],
+            'role' => new RoleResource($role),
             'availablePermissions' => $this->availablePermissions,
         ]);
     }
@@ -162,15 +126,15 @@ class RoleController extends Controller
 
         $role->update($validated);
 
+        Notify::success('Role updated successfully.');
+
         if ($request->wantsJson()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Role updated successfully.',
-                'role' => $role,
+            return Response::success([
+                'role' => new RoleResource($role),
             ]);
         }
 
-        return redirect()->route('v2.admin.roles.index')
+        return redirect()->route('admin.roles.index')
             ->with('success', 'Role updated successfully.');
     }
 
@@ -178,11 +142,10 @@ class RoleController extends Controller
     {
         // Prevent deleting role with users
         if ($role->users()->count() > 0) {
+            Notify::error('Cannot delete role with existing users.');
+
             if ($request->wantsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Cannot delete role with existing users.',
-                ], 422);
+                return Response::error('Cannot delete role with existing users.', 422);
             }
 
             return redirect()->back()
@@ -191,14 +154,13 @@ class RoleController extends Controller
 
         $role->delete();
 
+        Notify::success('Role deleted successfully.');
+
         if ($request->wantsJson()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Role deleted successfully.',
-            ]);
+            return Response::success();
         }
 
-        return redirect()->route('v2.admin.roles.index')
+        return redirect()->route('admin.roles.index')
             ->with('success', 'Role deleted successfully.');
     }
 }

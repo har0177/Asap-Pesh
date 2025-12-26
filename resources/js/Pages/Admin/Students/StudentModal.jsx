@@ -56,7 +56,7 @@ const StudentModal = ({
       setLoading(true)
 
       if (isEdit) {
-        await axios.put(route('v2.admin.students.update', record.id), formData)
+        await axios.put(route('admin.students.update', record.id), formData)
         message.success('Student updated successfully')
       }
 

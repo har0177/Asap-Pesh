@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\ReligionEnum;
 use App\Enums\TaxonomyTypeEnum;
+use App\Traits\Filterable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -11,8 +12,22 @@ use Illuminate\Notifications\Notifiable;
 
 class Student extends Model
 {
-  use Notifiable, SoftDeletes;
-  
+  use Notifiable, SoftDeletes, Filterable;
+
+  /**
+   * Searchable fields for the filter trait
+   */
+  public array $searchable = [
+      'father_name',
+      'roll_no',
+      'user.first_name',
+      'user.last_name',
+      'user.email',
+      'user.phone',
+      'user.cnic',
+      'diploma.name',
+  ];
+
   protected $guarded;
   
   protected $casts = [

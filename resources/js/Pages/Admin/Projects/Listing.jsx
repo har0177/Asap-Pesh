@@ -4,7 +4,7 @@ import { PlusOutlined } from '@ant-design/icons'
 import { router } from '@inertiajs/react'
 import PageContent from '@/Components/PageContent.jsx'
 import GlobalPageHeader from '@/Components/GlobalPageHeader.jsx'
-import DataGridTable from '@/Components/DataGridTable.jsx'
+import DataGridTable from '@/Components/DataGridTable/DataGridTable.jsx'
 import { projectColumns } from './ProjectColumn.jsx'
 import ProjectModal from './ProjectModal.jsx'
 import usePermissions from '@/Helpers/Context/usePermissions.js'
@@ -33,7 +33,7 @@ function Listing() {
   }
 
   const handleView = (record) => {
-    router.visit(route('v2.admin.projects.show', record.id))
+    router.visit(route('admin.projects.show', record.id))
   }
 
   const handleUpdate = async (record) => {
@@ -50,7 +50,7 @@ function Listing() {
       cancelText: 'Cancel',
       onOk: async () => {
         try {
-          await axios.delete(route('v2.admin.projects.destroy', record.id))
+          await axios.delete(route('admin.projects.destroy', record.id))
           message.success('Project deleted successfully')
           handleRefresh()
         } catch (error) {
@@ -62,7 +62,7 @@ function Listing() {
 
   const handleRevert = async (record) => {
     try {
-      await axios.post(route('v2.admin.projects.restore', record.id))
+      await axios.post(route('admin.projects.restore', record.id))
       message.success('Project restored successfully')
       handleRefresh()
     } catch (error) {
@@ -99,7 +99,7 @@ function Listing() {
       <GlobalPageHeader
         title="Manage Projects"
         parentPageTitle="Dashboard"
-        parentPageRoute="v2.admin.dashboard"
+        parentPageRoute="admin.dashboard"
         actionButtons={actionButtons}
       />
       <Spin spinning={recordLoading}>
@@ -107,7 +107,7 @@ function Listing() {
           <DataGridTable
             gridRef={gridRef}
             columns={columns}
-            routeName="v2.admin.projects.listing"
+            routeName="admin.projects.listing"
             pageSize={20}
             pagination={true}
             setIsActive={setIsActive}

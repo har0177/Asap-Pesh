@@ -46,10 +46,10 @@ const UserModal = ({
       setLoading(true)
 
       if (isEdit) {
-        await axios.put(route('v2.admin.users.update', record.id), formData)
+        await axios.put(route('admin.users.update', record.id), formData)
         message.success('User updated successfully')
       } else {
-        await axios.post(route('v2.admin.users.store'), formData)
+        await axios.post(route('admin.users.store'), formData)
         message.success('User created successfully')
       }
 
