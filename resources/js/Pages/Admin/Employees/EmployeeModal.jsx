@@ -16,7 +16,8 @@ const EmployeeModal = ({
 }) => {
   const [form] = Form.useForm()
   const [loading, setLoading] = useState(false)
-  const isEdit = !!record?.id
+  const isEdit = !!record?.id && !record?.viewMode
+  const isViewMode = !!record?.viewMode
 
   useEffect(() => {
     if (visible && record) {
@@ -80,9 +81,9 @@ const EmployeeModal = ({
     <CustomModal
       open={visible}
       onCancel={handleClose}
-      title={isEdit ? 'Edit Employee' : 'Create Employee'}
+      title={isViewMode ? 'View Employee' : (isEdit ? 'Edit Employee' : 'Create Employee')}
       width={700}
-      showSave
+      showSave={!isViewMode}
       saveText={isEdit ? 'Update' : 'Create'}
       onSave={handleSubmit}
       loading={loading}
@@ -90,6 +91,7 @@ const EmployeeModal = ({
       <Form
         form={form}
         layout="vertical"
+        disabled={isViewMode}
       >
         <Row gutter={16}>
           <Col span={12}>

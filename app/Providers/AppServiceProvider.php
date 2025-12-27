@@ -22,10 +22,17 @@ class AppServiceProvider extends ServiceProvider
 			*/
 		public function boot() : void
 		{
-				$projects = Project::where( 'expiry_date', '>', now() )->first();
-				$contents = Content::select( 'id', 'title', 'slug' )->where( 'status', 'Active' )->get();
-				View::share( [ 'projects' => $projects, 'contents' => $contents ] );
-				
+				// Only share Blade view data when not running in console and database is available
+				if (!$this->app->runningInConsole()) {
+					try {
+						$projects = Project::where('expiry_date', '>', now())->first();
+						$contents = Content::select('id', 'title', 'slug')->where('status', 'Active')->get();
+						View::share(['projects' => $projects, 'contents' => $contents]);
+					} catch (\Exception $e) {
+						// Silently fail if database is not available
+						View::share(['projects' => null, 'contents' => collect([])]);
+					}
+				}
 		}
 		
 }

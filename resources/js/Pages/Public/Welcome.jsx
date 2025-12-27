@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import { Row, Col, Card, Button, Typography, Carousel, Space, Divider, Tag, Avatar, Image, List } from 'antd';
 import {
     RightOutlined,
+    LeftOutlined,
     BookOutlined,
     TeamOutlined,
     TrophyOutlined,
@@ -61,81 +62,491 @@ export default function Welcome({
     featuredStaff = [],
     galleries = [],
 }) {
+    const carouselRef = useRef(null);
+
     return (
         <PublicLayout>
             <Head title="Welcome" />
 
-            {/* Hero Carousel */}
-            <Carousel autoplay effect="fade">
-                {slides.map((slide) => (
-                    <div key={slide.id}>
-                        <div
-                            style={{
-                                height: 500,
-                                background: `linear-gradient(rgba(0,21,41,0.7), rgba(0,21,41,0.7)), url(${slide.image_path}) center/cover`,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                flexDirection: 'column',
-                                color: '#fff',
-                                textAlign: 'center',
-                                padding: 48,
-                            }}
-                        >
-                            <Title style={{ color: '#fff', fontSize: 48, marginBottom: 16 }}>
-                                {slide.title}
-                            </Title>
-                            <Paragraph
-                                style={{
-                                    color: 'rgba(255,255,255,0.85)',
-                                    fontSize: 20,
-                                    maxWidth: 600,
-                                    marginBottom: 32,
-                                }}
-                            >
-                                {slide.subtitle}
-                            </Paragraph>
-                            <Space size="large">
-                                <Button type="primary" size="large" icon={<RightOutlined />}>
-                                    <Link href="/apply" style={{ color: 'inherit' }}>
-                                        Apply Now
-                                    </Link>
-                                </Button>
-                                <Button size="large" ghost>
-                                    <Link href="/about" style={{ color: 'inherit' }}>
-                                        Learn More
-                                    </Link>
-                                </Button>
-                            </Space>
-                        </div>
-                    </div>
-                ))}
-            </Carousel>
+            {/* Hero Section with Carousel and News Sidebar */}
+            <div className="hero-with-sidebar" style={{ display: 'flex', background: '#f0f2f5' }}>
+                <style>{`
+                    @keyframes pulse {
+                        0%, 100% { opacity: 1; transform: scale(1); }
+                        50% { opacity: 0.5; transform: scale(1.2); }
+                    }
+                    @media (max-width: 992px) {
+                        .hero-with-sidebar {
+                            flex-direction: column !important;
+                        }
+                        .hero-with-sidebar > div:first-child {
+                            flex: 1 1 100% !important;
+                        }
+                        .news-sidebar {
+                            flex: 1 1 100% !important;
+                            max-width: 100% !important;
+                            border-left: none !important;
+                            border-top: 3px solid #1890ff !important;
+                        }
+                        .news-marquee-container {
+                            height: 250px !important;
+                        }
+                    }
+                `}</style>
+                {/* Hero Carousel - Left Side */}
+                <div style={{ flex: '1 1 70%', minWidth: 0, position: 'relative' }}>
+                    <style>{`
+                        .hero-carousel .slick-dots {
+                            bottom: 20px !important;
+                        }
+                        .hero-carousel .slick-dots li button {
+                            background: rgba(255,255,255,0.5) !important;
+                            border-radius: 50% !important;
+                            width: 10px !important;
+                            height: 10px !important;
+                        }
+                        .hero-carousel .slick-dots li button::before {
+                            display: none !important;
+                        }
+                        .hero-carousel .slick-dots li.slick-active button {
+                            background: #1890ff !important;
+                            width: 24px !important;
+                            border-radius: 5px !important;
+                        }
+                        .slide-content {
+                            animation: slideUp 0.8s ease-out;
+                        }
+                        @keyframes slideUp {
+                            from {
+                                opacity: 0;
+                                transform: translateY(30px);
+                            }
+                            to {
+                                opacity: 1;
+                                transform: translateY(0);
+                            }
+                        }
+                        .custom-arrow {
+                            position: absolute;
+                            top: 50%;
+                            transform: translateY(-50%);
+                            z-index: 10;
+                            width: 48px;
+                            height: 48px;
+                            background: rgba(0,0,0,0.5);
+                            border: 2px solid rgba(255,255,255,0.3);
+                            border-radius: 50%;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                            color: #fff;
+                            font-size: 20px;
+                        }
+                        .custom-arrow:hover {
+                            background: rgba(24,144,255,0.9);
+                            border-color: #1890ff;
+                        }
+                        .custom-arrow-left {
+                            left: 24px;
+                        }
+                        .custom-arrow-right {
+                            right: 24px;
+                        }
+                    `}</style>
+                    <Carousel
+                        ref={carouselRef}
+                        autoplay
+                        effect="fade"
+                        className="hero-carousel"
+                        autoplaySpeed={5000}
+                    >
+                        {slides.map((slide) => (
+                            <div key={slide.id}>
+                                <div
+                                    style={{
+                                        height: 420,
+                                        background: `linear-gradient(135deg, rgba(0,21,41,0.85) 0%, rgba(0,58,112,0.75) 100%), url(${slide.image_path}) center/cover`,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        flexDirection: 'column',
+                                        color: '#fff',
+                                        textAlign: 'center',
+                                        padding: 48,
+                                        position: 'relative',
+                                    }}
+                                >
+                                    {/* Decorative Elements */}
+                                    <div style={{
+                                        position: 'absolute',
+                                        top: 0,
+                                        left: 0,
+                                        right: 0,
+                                        bottom: 0,
+                                        backgroundImage: 'radial-gradient(circle at 10% 90%, rgba(24,144,255,0.15) 0%, transparent 40%)',
+                                        pointerEvents: 'none',
+                                    }} />
 
-            {/* Features Section */}
-            <div style={{ padding: '64px 48px', background: '#fff' }}>
-                <div style={{ textAlign: 'center', marginBottom: 48 }}>
-                    <Title level={2}>Why Choose ASA Peshawar?</Title>
-                    <Paragraph style={{ fontSize: 16, color: '#666', maxWidth: 600, margin: '0 auto' }}>
-                        We provide world-class education in agricultural and veterinary sciences
-                        with hands-on training and industry exposure.
+                                    <div className="slide-content">
+                                        <div style={{
+                                            display: 'inline-block',
+                                            background: 'linear-gradient(135deg, #1890ff, #52c41a)',
+                                            padding: '8px 24px',
+                                            borderRadius: 30,
+                                            marginBottom: 20,
+                                        }}>
+                                            <Text style={{ color: '#fff', fontWeight: 600, fontSize: 13, textTransform: 'uppercase', letterSpacing: 2 }}>
+                                                Since 1954
+                                            </Text>
+                                        </div>
+                                        <Title style={{
+                                            color: '#fff',
+                                            fontSize: 46,
+                                            marginBottom: 16,
+                                            textShadow: '2px 2px 4px rgba(0,0,0,0.3)',
+                                            fontWeight: 700,
+                                        }}>
+                                            {slide.title}
+                                        </Title>
+                                        <Paragraph
+                                            style={{
+                                                color: 'rgba(255,255,255,0.9)',
+                                                fontSize: 18,
+                                                maxWidth: 600,
+                                                lineHeight: 1.6,
+                                            }}
+                                        >
+                                            {slide.subtitle}
+                                        </Paragraph>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </Carousel>
+                    {/* Custom Navigation Arrows */}
+                    <div
+                        className="custom-arrow custom-arrow-left"
+                        onClick={() => carouselRef.current?.prev()}
+                    >
+                        <LeftOutlined />
+                    </div>
+                    <div
+                        className="custom-arrow custom-arrow-right"
+                        onClick={() => carouselRef.current?.next()}
+                    >
+                        <RightOutlined />
+                    </div>
+                </div>
+
+                {/* News & Events Sidebar - Right Side with Marquee */}
+                <div className="news-sidebar" style={{
+                    flex: '0 0 30%',
+                    maxWidth: 380,
+                    background: 'linear-gradient(180deg, #001529 0%, #002140 100%)',
+                    borderLeft: '3px solid #1890ff',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    boxShadow: '-4px 0 20px rgba(0,0,0,0.1)',
+                }}>
+                    <style>{`
+                        @keyframes marquee {
+                            0% { transform: translateY(0); }
+                            100% { transform: translateY(-50%); }
+                        }
+                        .news-marquee-container {
+                            overflow: hidden;
+                            height: 370px;
+                            position: relative;
+                        }
+                        .news-marquee-content {
+                            animation: marquee 20s linear infinite;
+                        }
+                        .news-marquee-content:hover {
+                            animation-play-state: paused;
+                        }
+                        .news-item {
+                            padding: 16px 20px;
+                            border-bottom: 1px solid rgba(255,255,255,0.08);
+                            transition: all 0.3s ease;
+                            cursor: pointer;
+                        }
+                        .news-item:hover {
+                            background: rgba(24, 144, 255, 0.15);
+                            border-left: 3px solid #1890ff;
+                            margin-left: -3px;
+                        }
+                        .news-item-title {
+                            color: #fff;
+                            font-weight: 500;
+                            font-size: 14px;
+                            line-height: 1.5;
+                            margin-bottom: 8px;
+                            display: -webkit-box;
+                            -webkit-line-clamp: 2;
+                            -webkit-box-orient: vertical;
+                            overflow: hidden;
+                        }
+                        .news-item-meta {
+                            display: flex;
+                            align-items: center;
+                            gap: 12px;
+                        }
+                        .news-item-date {
+                            color: rgba(255,255,255,0.6);
+                            font-size: 12px;
+                            display: flex;
+                            align-items: center;
+                            gap: 4px;
+                        }
+                        .news-item-badge {
+                            background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+                            color: #fff;
+                            padding: 2px 8px;
+                            border-radius: 3px;
+                            font-size: 10px;
+                            font-weight: 600;
+                            text-transform: uppercase;
+                            letter-spacing: 0.5px;
+                        }
+                        .news-item-badge.event {
+                            background: linear-gradient(135deg, #52c41a 0%, #389e0d 100%);
+                        }
+                        .news-item-badge.notice {
+                            background: linear-gradient(135deg, #faad14 0%, #d48806 100%);
+                        }
+                    `}</style>
+
+                    {/* Header */}
+                    <div style={{
+                        background: 'linear-gradient(135deg, #1890ff 0%, #096dd9 100%)',
+                        color: '#fff',
+                        padding: '18px 20px',
+                        fontWeight: 700,
+                        fontSize: 16,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 10,
+                        textTransform: 'uppercase',
+                        letterSpacing: '1px',
+                        boxShadow: '0 2px 8px rgba(24, 144, 255, 0.4)',
+                    }}>
+                        <CalendarOutlined style={{ fontSize: 20 }} />
+                        News & Events
+                        <div style={{
+                            marginLeft: 'auto',
+                            width: 8,
+                            height: 8,
+                            background: '#52c41a',
+                            borderRadius: '50%',
+                            animation: 'pulse 2s infinite',
+                        }} />
+                    </div>
+
+                    {/* Marquee Content */}
+                    <div className="news-marquee-container">
+                        {events.length > 0 ? (
+                            <div className="news-marquee-content">
+                                {/* Duplicate content for seamless loop */}
+                                {[...events.slice(0, 8), ...events.slice(0, 8)].map((event, index) => (
+                                    <Link href={`/event/${event.slug}`} key={`${event.id}-${index}`}>
+                                        <div className="news-item">
+                                            <div className="news-item-meta">
+                                                <span className={`news-item-badge ${event.type === 'event' ? 'event' : event.type === 'notice' ? 'notice' : ''}`}>
+                                                    {event.type?.toUpperCase() || 'FILE'}
+                                                </span>
+                                            </div>
+                                            <div className="news-item-title" style={{ marginTop: 8 }}>
+                                                {event.title}
+                                            </div>
+                                            <div className="news-item-date">
+                                                <CalendarOutlined style={{ fontSize: 12 }} />
+                                                {event.created_at}
+                                            </div>
+                                        </div>
+                                    </Link>
+                                ))}
+                            </div>
+                        ) : (
+                            <div style={{ padding: 40, textAlign: 'center', color: 'rgba(255,255,255,0.5)' }}>
+                                <CalendarOutlined style={{ fontSize: 48, marginBottom: 16, opacity: 0.3 }} />
+                                <div>No events available</div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Footer Link */}
+                    <Link href="/events">
+                        <div style={{
+                            padding: '14px 20px',
+                            background: 'rgba(24, 144, 255, 0.1)',
+                            color: '#1890ff',
+                            textAlign: 'center',
+                            fontWeight: 600,
+                            fontSize: 13,
+                            borderTop: '1px solid rgba(255,255,255,0.08)',
+                            transition: 'all 0.3s ease',
+                            cursor: 'pointer',
+                        }}
+                        onMouseEnter={(e) => e.target.style.background = 'rgba(24, 144, 255, 0.2)'}
+                        onMouseLeave={(e) => e.target.style.background = 'rgba(24, 144, 255, 0.1)'}
+                        >
+                            View All News & Events <RightOutlined style={{ marginLeft: 6 }} />
+                        </div>
+                    </Link>
+                </div>
+            </div>
+
+            {/* Features Section - Why Choose Us */}
+            <div style={{
+                padding: '80px 48px',
+                background: 'linear-gradient(135deg, #001529 0%, #003a70 100%)',
+                position: 'relative',
+                overflow: 'hidden',
+            }}>
+                <style>{`
+                    .feature-card {
+                        background: rgba(255,255,255,0.05);
+                        border: 1px solid rgba(255,255,255,0.1);
+                        border-radius: 16px;
+                        padding: 32px 24px;
+                        text-align: center;
+                        height: 100%;
+                        transition: all 0.4s ease;
+                        position: relative;
+                        overflow: hidden;
+                    }
+                    .feature-card::before {
+                        content: '';
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        height: 3px;
+                        background: linear-gradient(90deg, #1890ff, #52c41a);
+                        transform: scaleX(0);
+                        transition: transform 0.4s ease;
+                    }
+                    .feature-card:hover {
+                        background: rgba(255,255,255,0.1);
+                        transform: translateY(-8px);
+                        box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+                    }
+                    .feature-card:hover::before {
+                        transform: scaleX(1);
+                    }
+                    .feature-icon {
+                        width: 80px;
+                        height: 80px;
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        margin: 0 auto 24px;
+                        transition: all 0.4s ease;
+                    }
+                    .feature-card:hover .feature-icon {
+                        transform: scale(1.1) rotate(5deg);
+                    }
+                    .feature-number {
+                        position: absolute;
+                        top: 16px;
+                        right: 20px;
+                        font-size: 48px;
+                        font-weight: 800;
+                        color: rgba(255,255,255,0.05);
+                        line-height: 1;
+                    }
+                `}</style>
+
+                {/* Background Pattern */}
+                <div style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundImage: 'radial-gradient(circle at 20% 80%, rgba(24,144,255,0.1) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(82,196,26,0.1) 0%, transparent 50%)',
+                    pointerEvents: 'none',
+                }} />
+
+                <div style={{ textAlign: 'center', marginBottom: 56, position: 'relative' }}>
+                    <div style={{
+                        display: 'inline-block',
+                        background: 'linear-gradient(135deg, #1890ff, #52c41a)',
+                        padding: '6px 20px',
+                        borderRadius: 20,
+                        marginBottom: 16,
+                    }}>
+                        <Text style={{ color: '#fff', fontWeight: 600, fontSize: 12, textTransform: 'uppercase', letterSpacing: 2 }}>
+                            Our Advantages
+                        </Text>
+                    </div>
+                    <Title level={2} style={{ color: '#fff', marginBottom: 16, fontSize: 36 }}>
+                        Why Choose ASA Peshawar?
+                    </Title>
+                    <Paragraph style={{ fontSize: 16, color: 'rgba(255,255,255,0.7)', maxWidth: 600, margin: '0 auto' }}>
+                        Empowering the next generation of agricultural leaders with excellence in education,
+                        practical training, and career opportunities.
                     </Paragraph>
                 </div>
 
-                <Row gutter={[32, 32]}>
+                <Row gutter={[24, 24]} style={{ position: 'relative' }}>
                     {features.map((feature, index) => (
                         <Col xs={24} sm={12} lg={6} key={index}>
-                            <Card
-                                hoverable
-                                style={{ textAlign: 'center', height: '100%' }}
-                                bordered={false}
-                            >
-                                <div style={{ marginBottom: 16 }}>{feature.icon}</div>
-                                <Title level={4}>{feature.title}</Title>
-                                <Text type="secondary">{feature.description}</Text>
-                            </Card>
+                            <div className="feature-card">
+                                <span className="feature-number">0{index + 1}</span>
+                                <div
+                                    className="feature-icon"
+                                    style={{
+                                        background: index === 0 ? 'linear-gradient(135deg, #1890ff 0%, #096dd9 100%)' :
+                                                   index === 1 ? 'linear-gradient(135deg, #52c41a 0%, #389e0d 100%)' :
+                                                   index === 2 ? 'linear-gradient(135deg, #faad14 0%, #d48806 100%)' :
+                                                   'linear-gradient(135deg, #722ed1 0%, #531dab 100%)',
+                                        boxShadow: index === 0 ? '0 8px 24px rgba(24,144,255,0.4)' :
+                                                   index === 1 ? '0 8px 24px rgba(82,196,26,0.4)' :
+                                                   index === 2 ? '0 8px 24px rgba(250,173,20,0.4)' :
+                                                   '0 8px 24px rgba(114,46,209,0.4)',
+                                    }}
+                                >
+                                    {React.cloneElement(feature.icon, { style: { fontSize: 36, color: '#fff' } })}
+                                </div>
+                                <Title level={4} style={{ color: '#fff', marginBottom: 12 }}>{feature.title}</Title>
+                                <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, lineHeight: 1.6 }}>
+                                    {feature.description}
+                                </Text>
+                            </div>
                         </Col>
                     ))}
+                </Row>
+
+                {/* Stats Row */}
+                <Row gutter={[32, 32]} style={{ marginTop: 64, textAlign: 'center' }}>
+                    <Col xs={12} sm={6}>
+                        <div style={{ borderRight: '1px solid rgba(255,255,255,0.1)', paddingRight: 20 }}>
+                            <Title level={1} style={{ color: '#1890ff', marginBottom: 4, fontSize: 42 }}>70+</Title>
+                            <Text style={{ color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', fontSize: 12, letterSpacing: 1 }}>Years Experience</Text>
+                        </div>
+                    </Col>
+                    <Col xs={12} sm={6}>
+                        <div style={{ borderRight: '1px solid rgba(255,255,255,0.1)', paddingRight: 20 }}>
+                            <Title level={1} style={{ color: '#52c41a', marginBottom: 4, fontSize: 42 }}>5000+</Title>
+                            <Text style={{ color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', fontSize: 12, letterSpacing: 1 }}>Alumni Network</Text>
+                        </div>
+                    </Col>
+                    <Col xs={12} sm={6}>
+                        <div style={{ borderRight: '1px solid rgba(255,255,255,0.1)', paddingRight: 20 }}>
+                            <Title level={1} style={{ color: '#faad14', marginBottom: 4, fontSize: 42 }}>95%</Title>
+                            <Text style={{ color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', fontSize: 12, letterSpacing: 1 }}>Placement Rate</Text>
+                        </div>
+                    </Col>
+                    <Col xs={12} sm={6}>
+                        <div>
+                            <Title level={1} style={{ color: '#722ed1', marginBottom: 4, fontSize: 42 }}>2</Title>
+                            <Text style={{ color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', fontSize: 12, letterSpacing: 1 }}>Diploma Programs</Text>
+                        </div>
+                    </Col>
                 </Row>
             </div>
 
@@ -186,170 +597,6 @@ export default function Welcome({
                             </Col>
                         ))}
                     </Row>
-                </div>
-            )}
-
-            {/* News & Events Section */}
-            {events.length > 0 && (
-                <div style={{ padding: '64px 48px', background: '#fff' }}>
-                    <div style={{ textAlign: 'center', marginBottom: 48 }}>
-                        <Title level={2}>Latest News & Events</Title>
-                        <Paragraph style={{ fontSize: 16, color: '#666' }}>
-                            Stay updated with our latest announcements
-                        </Paragraph>
-                    </div>
-
-                    <Row gutter={[24, 24]}>
-                        {events.slice(0, 3).map((event) => (
-                            <Col xs={24} md={8} key={event.id}>
-                                <Link href={`/event/${event.slug}`}>
-                                    <Card
-                                        hoverable
-                                        cover={
-                                            event.featured_image ? (
-                                                <img
-                                                    alt={event.title}
-                                                    src={event.featured_image}
-                                                    style={{ height: 200, objectFit: 'cover' }}
-                                                />
-                                            ) : (
-                                                <div
-                                                    style={{
-                                                        height: 200,
-                                                        background: 'linear-gradient(135deg, #1890ff, #003a70)',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                    }}
-                                                >
-                                                    <CalendarOutlined style={{ fontSize: 64, color: '#fff' }} />
-                                                </div>
-                                            )
-                                        }
-                                    >
-                                        <Tag color={event.type === 'event' ? 'green' : 'blue'} style={{ marginBottom: 8 }}>
-                                            {event.type?.toUpperCase()}
-                                        </Tag>
-                                        <Card.Meta
-                                            title={event.title}
-                                            description={
-                                                <>
-                                                    <Text type="secondary" style={{ fontSize: 12 }}>
-                                                        {event.created_at}
-                                                    </Text>
-                                                    <Paragraph ellipsis={{ rows: 2 }} style={{ marginTop: 8, marginBottom: 0 }}>
-                                                        {event.excerpt}
-                                                    </Paragraph>
-                                                </>
-                                            }
-                                        />
-                                    </Card>
-                                </Link>
-                            </Col>
-                        ))}
-                    </Row>
-
-                    <div style={{ textAlign: 'center', marginTop: 32 }}>
-                        <Link href="/events">
-                            <Button type="primary" ghost>
-                                View All News & Events <RightOutlined />
-                            </Button>
-                        </Link>
-                    </div>
-                </div>
-            )}
-
-            {/* Gallery Preview Section */}
-            {galleries.length > 0 && (
-                <div style={{ padding: '64px 48px', background: '#f5f5f5' }}>
-                    <div style={{ textAlign: 'center', marginBottom: 48 }}>
-                        <Title level={2}>Photo Gallery</Title>
-                        <Paragraph style={{ fontSize: 16, color: '#666' }}>
-                            Glimpses of our campus and activities
-                        </Paragraph>
-                    </div>
-
-                    <Row gutter={[16, 16]}>
-                        {galleries.slice(0, 8).map((gallery) => (
-                            <Col xs={12} sm={8} md={6} lg={3} key={gallery.id}>
-                                {gallery.image ? (
-                                    <Image
-                                        src={gallery.image}
-                                        alt={gallery.title}
-                                        style={{ width: '100%', height: 150, objectFit: 'cover', borderRadius: 8 }}
-                                    />
-                                ) : (
-                                    <div
-                                        style={{
-                                            width: '100%',
-                                            height: 150,
-                                            background: '#e0e0e0',
-                                            borderRadius: 8,
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                        }}
-                                    >
-                                        <PictureOutlined style={{ fontSize: 32, color: '#999' }} />
-                                    </div>
-                                )}
-                            </Col>
-                        ))}
-                    </Row>
-
-                    <div style={{ textAlign: 'center', marginTop: 32 }}>
-                        <Link href="/gallery">
-                            <Button type="primary" ghost>
-                                View Full Gallery <RightOutlined />
-                            </Button>
-                        </Link>
-                    </div>
-                </div>
-            )}
-
-            {/* Featured Staff Section */}
-            {featuredStaff.length > 0 && (
-                <div style={{ padding: '64px 48px', background: '#fff' }}>
-                    <div style={{ textAlign: 'center', marginBottom: 48 }}>
-                        <Title level={2}>Our Faculty</Title>
-                        <Paragraph style={{ fontSize: 16, color: '#666' }}>
-                            Meet our experienced team of educators
-                        </Paragraph>
-                    </div>
-
-                    <Row gutter={[32, 32]} justify="center">
-                        {featuredStaff.map((staff) => (
-                            <Col xs={24} sm={12} md={6} key={staff.id}>
-                                <Card
-                                    hoverable
-                                    style={{ textAlign: 'center' }}
-                                    bordered={false}
-                                >
-                                    <Avatar
-                                        size={120}
-                                        src={staff.photo}
-                                        icon={<UserOutlined />}
-                                        style={{ marginBottom: 16 }}
-                                    />
-                                    <Title level={4} style={{ marginBottom: 4 }}>{staff.name}</Title>
-                                    <Text type="secondary">{staff.designation}</Text>
-                                    {staff.department && (
-                                        <Text type="secondary" style={{ display: 'block' }}>
-                                            {staff.department}
-                                        </Text>
-                                    )}
-                                </Card>
-                            </Col>
-                        ))}
-                    </Row>
-
-                    <div style={{ textAlign: 'center', marginTop: 32 }}>
-                        <Link href="/staff">
-                            <Button type="primary" ghost>
-                                View All Staff <RightOutlined />
-                            </Button>
-                        </Link>
-                    </div>
                 </div>
             )}
 

@@ -1,18 +1,31 @@
-import { Tag, Image, Space } from 'antd'
-import ActionColumn from '@/Components/DataGridTable/ActionColumn.jsx'
+import React from 'react'
+import { Dropdown, Space, Tag, Image } from 'antd'
+import {
+  DeleteOutlined,
+  EditOutlined,
+  EllipsisOutlined,
+  EyeOutlined,
+} from '@ant-design/icons'
 
-const GalleryColumn = ({ onEdit, onDelete }) => {
-  return [
+export const galleryColumns = ({
+  handleView,
+  handleUpdate,
+  handleDelete,
+  hasPermission,
+}) => {
+  const columns = [
     {
       headerName: 'ID',
       field: 'id',
       width: 80,
+      pinned: 'left',
       sortable: true,
     },
     {
       headerName: 'Title',
       field: 'title',
       flex: 1,
+      minWidth: 150,
       sortable: true,
     },
     {
@@ -73,16 +86,63 @@ const GalleryColumn = ({ onEdit, onDelete }) => {
     {
       headerName: 'Actions',
       field: 'actions',
-      width: 120,
-      sortable: false,
+      width: 80,
       pinned: 'right',
-      cellRenderer: ActionColumn,
-      cellRendererParams: {
-        onEdit,
-        onDelete,
+      cellRenderer: (params) => {
+        const record = params.data
+
+        const items = []
+
+        if (hasPermission('view gallery') || true) {
+          items.push({
+            key: 'view',
+            label: 'View',
+            icon: <EyeOutlined />,
+            onClick: () => handleView?.(record),
+          })
+        }
+
+        if (hasPermission('edit gallery') || true) {
+          items.push({
+            key: 'edit',
+            label: 'Edit',
+            icon: <EditOutlined />,
+            onClick: () => handleUpdate?.(record),
+          })
+        }
+
+        if (hasPermission('delete gallery') || true) {
+          items.push({
+            key: 'delete',
+            label: 'Delete',
+            icon: <DeleteOutlined />,
+            danger: true,
+            onClick: () => handleDelete?.(record),
+          })
+        }
+
+        if (items.length === 0) {
+          return null
+        }
+
+        return (
+          <Dropdown
+            menu={{ items }}
+            trigger={['click']}
+            placement="bottomRight"
+          >
+            <a onClick={(e) => e.preventDefault()}>
+              <Space>
+                <EllipsisOutlined style={{ fontSize: '18px' }} />
+              </Space>
+            </a>
+          </Dropdown>
+        )
       },
     },
   ]
+
+  return columns
 }
 
-export default GalleryColumn
+export default galleryColumns

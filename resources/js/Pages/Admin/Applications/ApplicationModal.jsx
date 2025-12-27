@@ -30,6 +30,7 @@ const ApplicationModal = ({
 }) => {
   const [form] = Form.useForm()
   const [loading, setLoading] = useState(false)
+  const isViewMode = !!record?.viewMode
 
   useEffect(() => {
     if (visible && record) {
@@ -74,9 +75,9 @@ const ApplicationModal = ({
     <CustomModal
       open={visible}
       onCancel={handleClose}
-      title="Update Application Status"
+      title={isViewMode ? 'View Application' : 'Update Application Status'}
       width={700}
-      showSave
+      showSave={!isViewMode}
       saveText="Update Status"
       onSave={handleSubmit}
       loading={loading}
@@ -115,6 +116,7 @@ const ApplicationModal = ({
       <Form
         form={form}
         layout="vertical"
+        disabled={isViewMode}
       >
         <Row gutter={16}>
           <Col span={24}>

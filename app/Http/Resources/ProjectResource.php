@@ -18,7 +18,10 @@ class ProjectResource extends JsonResource
             return [
                 'id' => $this->id,
                 'name' => $this->name,
-                'diploma' => $this->whenLoaded('diploma', fn() => $this->diploma?->name),
+                'diploma' => $this->whenLoaded('diploma', fn() => $this->diploma ? [
+                    'id' => $this->diploma->id,
+                    'name' => $this->diploma->name,
+                ] : null),
                 'diploma_id' => $this->diploma_id,
                 'seats' => $this->seats,
                 'fee' => $this->fee,

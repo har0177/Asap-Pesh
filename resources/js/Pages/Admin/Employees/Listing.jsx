@@ -44,7 +44,8 @@ function Listing() {
   }
 
   const handleView = (record) => {
-    router.visit(route('admin.employees.show', record.id))
+    setRecord({ ...record, viewMode: true })
+    setVisible(true)
   }
 
   const handleUpdate = async (record) => {
@@ -83,15 +84,16 @@ function Listing() {
     hasPermission,
   })
 
-  const actionButtons = hasPermission('add employee') ? [
+  const actionButtons = [
     {
-      key: 'add',
-      label: 'Add Employee',
+      title: 'Add Employee',
       icon: <PlusOutlined />,
       type: 'primary',
       onClick: handleCreate,
+      hasPermission: hasPermission('add employee'),
+      showButton: true,
     },
-  ] : []
+  ]
 
   return (
     <PageContent title="Manage Employees" canvas>

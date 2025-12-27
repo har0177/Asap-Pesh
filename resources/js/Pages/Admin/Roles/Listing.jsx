@@ -43,7 +43,8 @@ function Listing() {
   }
 
   const handleView = (record) => {
-    router.visit(route('admin.roles.show', record.id))
+    setRecord({ ...record, viewMode: true })
+    setVisible(true)
   }
 
   const handleUpdate = async (record) => {
@@ -82,15 +83,16 @@ function Listing() {
     hasPermission,
   })
 
-  const actionButtons = hasPermission('add role') ? [
+  const actionButtons = [
     {
-      key: 'add',
-      label: 'Add Role',
+      title: 'Add Role',
       icon: <PlusOutlined />,
       type: 'primary',
       onClick: handleCreate,
+      hasPermission: hasPermission('add role'),
+      showButton: true,
     },
-  ] : []
+  ]
 
   return (
     <PageContent title="Manage Roles" canvas>

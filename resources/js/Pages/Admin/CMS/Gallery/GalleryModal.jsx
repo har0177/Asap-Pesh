@@ -16,6 +16,7 @@ const GalleryModal = ({
   const [loading, setLoading] = useState(false)
   const [fileList, setFileList] = useState([])
   const isEdit = !!record?.id
+  const isViewMode = !!record?.viewMode
 
   useEffect(() => {
     if (visible && record) {
@@ -103,9 +104,9 @@ const GalleryModal = ({
     <CustomModal
       open={visible}
       onCancel={handleClose}
-      title={isEdit ? 'Edit Gallery' : 'Create Gallery'}
+      title={isViewMode ? 'View Gallery' : (isEdit ? 'Edit Gallery' : 'Create Gallery')}
       width={700}
-      showSave
+      showSave={!isViewMode}
       saveText={isEdit ? 'Update' : 'Create'}
       onSave={handleSubmit}
       loading={loading}
@@ -113,6 +114,7 @@ const GalleryModal = ({
       <Form
         form={form}
         layout="vertical"
+        disabled={isViewMode}
       >
         <Row gutter={16}>
           <Col span={18}>

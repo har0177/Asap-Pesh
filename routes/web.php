@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\PrintController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -13,6 +14,12 @@ use Illuminate\Support\Facades\Route;
 
 // Include all Inertia routes
 require __DIR__.'/inertia.php';
+
+// Print routes (Blade templates for printing)
+Route::get('/print-challan/{application}', [PrintController::class, 'challan'])->name('print.challan');
+Route::get('/print-form/{application}', [PrintController::class, 'form'])->name('print.form');
+Route::get('/student-card', [PrintController::class, 'studentCard'])->name('student.card');
+Route::get('/attendance', [PrintController::class, 'attendance'])->name('attendance');
 
 // Storage link utility
 Route::get('/linkstorage', function () {

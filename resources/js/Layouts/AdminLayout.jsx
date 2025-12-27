@@ -8,6 +8,9 @@ import {
     Badge,
     Button,
     Typography,
+    Breadcrumb,
+    Input,
+    Space,
     theme,
 } from 'antd';
 import {
@@ -23,12 +26,16 @@ import {
     ProfileOutlined,
     TrophyOutlined,
     MessageOutlined,
+    SearchOutlined,
+    HomeOutlined,
+    UserAddOutlined,
 } from '@ant-design/icons';
 import { useSetRecoilState } from 'recoil';
 import { userAtom, permissionsAtom } from '@/Helpers/atom.js';
+import { colors, shadows } from '@/theme.js';
 
 const { Header, Sider, Content, Footer } = Layout;
-const { Text } = Typography;
+const { Text, Title } = Typography;
 
 function getItem(label, key, icon, children) {
     return {
@@ -44,30 +51,35 @@ const menuItems = [
     getItem('Users & Roles', 'users-roles', <UserOutlined />, [
         getItem(<Link href="/admin/users">Users</Link>, 'users'),
         getItem(<Link href="/admin/roles">Roles</Link>, 'roles'),
+        getItem(<Link href="/admin/registered-users">Registered Users</Link>, 'registered-users'),
     ]),
     getItem(<Link href="/admin/students">Students</Link>, 'students', <TeamOutlined />),
     getItem(<Link href="/admin/employees">Employees</Link>, 'employees', <ProfileOutlined />),
     getItem('Admissions', 'admissions', <TrophyOutlined />, [
         getItem(<Link href="/admin/projects">Projects</Link>, 'projects'),
         getItem(<Link href="/admin/applications">Applications</Link>, 'applications'),
-        getItem(<Link href="/admin/merit-lists">Merit Lists</Link>, 'merit-lists'),
+        getItem(<Link href="/admin/merit">Merit Lists</Link>, 'merit'),
     ]),
     getItem('Content', 'cms', <FileTextOutlined />, [
         getItem(<Link href="/admin/slides">Slides</Link>, 'slides'),
         getItem(<Link href="/admin/gallery">Gallery</Link>, 'gallery'),
         getItem(<Link href="/admin/content">Pages</Link>, 'content'),
+        getItem(<Link href="/admin/events">News & Events</Link>, 'events'),
     ]),
-    getItem(<Link href="/admin/taxonomies">Settings</Link>, 'taxonomies', <SettingOutlined />),
-    getItem(<Link href="/admin/send-sms">SMS</Link>, 'sms', <MessageOutlined />),
+    getItem('Settings', 'settings', <SettingOutlined />, [
+        getItem(<Link href="/admin/settings">Site Settings</Link>, 'site-settings'),
+        getItem(<Link href="/admin/taxonomies">Taxonomies</Link>, 'taxonomies'),
+    ]),
+    getItem(<Link href="/admin/sms">SMS</Link>, 'sms', <MessageOutlined />),
 ];
 
-export default function AdminLayout({ children }) {
+export default function AdminLayout({ children, title, breadcrumbs }) {
     const { auth, flash } = usePage().props;
     const setUser = useSetRecoilState(userAtom);
     const setPermissions = useSetRecoilState(permissionsAtom);
     const [collapsed, setCollapsed] = useState(false);
     const {
-        token: { colorBgContainer, borderRadiusLG },
+        token: { borderRadiusLG },
     } = theme.useToken();
 
     // Set user and permissions in Recoil state
@@ -101,12 +113,14 @@ export default function AdminLayout({ children }) {
 
     return (
         <Layout style={{ minHeight: '100vh' }}>
+            {/* Professional Dark Sidebar */}
             <Sider
                 trigger={null}
                 collapsible
                 collapsed={collapsed}
                 theme="dark"
-                width={250}
+                width={260}
+                collapsedWidth={80}
                 style={{
                     overflow: 'auto',
                     height: '100vh',
@@ -114,97 +128,259 @@ export default function AdminLayout({ children }) {
                     left: 0,
                     top: 0,
                     bottom: 0,
+                    background: colors.secondary,
+                    boxShadow: '2px 0 8px rgba(0,0,0,0.15)',
                 }}
             >
+                {/* Logo */}
                 <div
                     style={{
-                        height: 64,
+                        height: 72,
                         display: 'flex',
                         alignItems: 'center',
-                        justifyContent: 'center',
-                        borderBottom: '1px solid rgba(255,255,255,0.1)',
+                        justifyContent: collapsed ? 'center' : 'flex-start',
+                        padding: collapsed ? 0 : '0 20px',
+                        borderBottom: '1px solid rgba(255,255,255,0.08)',
+                        transition: 'all 0.2s',
                     }}
                 >
-                    <Text
-                        strong
+                    <img
+                        src="/images/logo-sm.png"
+                        alt="ASA Logo"
                         style={{
-                            color: '#fff',
-                            fontSize: collapsed ? 16 : 20,
-                            transition: 'all 0.2s',
+                            height: 40,
+                            width: 'auto',
+                            filter: 'brightness(0) invert(1)',
                         }}
-                    >
-                        {collapsed ? 'ASA' : 'ASA Peshawar'}
-                    </Text>
+                    />
+                    {!collapsed && (
+                        <div style={{ marginLeft: 12 }}>
+                            <Title level={5} style={{ color: '#fff', margin: 0, fontSize: 15 }}>
+                                ASA Peshawar
+                            </Title>
+                            <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11 }}>
+                                Admin Panel
+                            </Text>
+                        </div>
+                    )}
                 </div>
+
+                {/* Navigation Menu */}
                 <Menu
                     theme="dark"
                     mode="inline"
                     defaultSelectedKeys={['dashboard']}
                     items={menuItems}
-                    style={{ borderRight: 0 }}
+                    style={{
+                        background: 'transparent',
+                        borderRight: 0,
+                        padding: '12px 0',
+                    }}
                 />
+
+                {/* User Profile at Bottom */}
+                {!collapsed && (
+                    <div
+                        style={{
+                            position: 'absolute',
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                            padding: '16px 24px',
+                            borderTop: '1px solid rgba(255,255,255,0.08)',
+                            background: 'rgba(0,0,0,0.2)',
+                        }}
+                    >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                            <Avatar
+                                size={40}
+                                icon={<UserOutlined />}
+                                src={auth?.user?.avatar}
+                                style={{ background: colors.primary }}
+                            />
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                                <Text
+                                    strong
+                                    style={{
+                                        color: '#fff',
+                                        display: 'block',
+                                        fontSize: 13,
+                                        whiteSpace: 'nowrap',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                    }}
+                                >
+                                    {auth?.user?.full_name || 'Admin User'}
+                                </Text>
+                                <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11 }}>
+                                    {auth?.user?.role?.name || 'Administrator'}
+                                </Text>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </Sider>
 
-            <Layout style={{ marginLeft: collapsed ? 80 : 250, transition: 'all 0.2s' }}>
+            {/* Main Layout */}
+            <Layout
+                style={{
+                    marginLeft: collapsed ? 80 : 260,
+                    transition: 'all 0.2s',
+                    background: colors.bgSecondary,
+                }}
+            >
+                {/* Professional Header */}
                 <Header
                     style={{
                         padding: '0 24px',
-                        background: colorBgContainer,
+                        background: '#fff',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
                         position: 'sticky',
                         top: 0,
-                        zIndex: 1,
-                        boxShadow: '0 1px 4px rgba(0,21,41,.08)',
+                        zIndex: 10,
+                        height: 72,
+                        boxShadow: shadows.sm,
                     }}
                 >
-                    <Button
-                        type="text"
-                        icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-                        onClick={() => setCollapsed(!collapsed)}
-                        style={{ fontSize: 16, width: 64, height: 64 }}
-                    />
-
+                    {/* Left: Toggle + Search */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                        <Button
+                            type="text"
+                            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+                            onClick={() => setCollapsed(!collapsed)}
+                            style={{
+                                fontSize: 18,
+                                width: 44,
+                                height: 44,
+                                borderRadius: 10,
+                                color: colors.gray700,
+                            }}
+                        />
+
+                        <Input
+                            placeholder="Search..."
+                            prefix={<SearchOutlined style={{ color: colors.gray400 }} />}
+                            style={{
+                                width: 280,
+                                borderRadius: 10,
+                                background: colors.gray50,
+                                border: 'none',
+                            }}
+                            size="large"
+                        />
+                    </div>
+
+                    {/* Right: Notifications + User */}
+                    <Space size={16}>
                         <Badge count={5} size="small">
-                            <Button type="text" icon={<BellOutlined />} />
+                            <Button
+                                type="text"
+                                icon={<BellOutlined style={{ fontSize: 20 }} />}
+                                style={{
+                                    width: 44,
+                                    height: 44,
+                                    borderRadius: 10,
+                                    color: colors.gray600,
+                                }}
+                            />
                         </Badge>
 
-                        <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
+                        <Dropdown
+                            menu={{ items: userMenuItems }}
+                            placement="bottomRight"
+                            trigger={['click']}
+                        >
                             <div
                                 style={{
                                     display: 'flex',
                                     alignItems: 'center',
-                                    gap: 8,
+                                    gap: 12,
                                     cursor: 'pointer',
+                                    padding: '8px 12px',
+                                    borderRadius: 10,
+                                    transition: 'background 0.2s',
                                 }}
+                                onMouseEnter={(e) => e.currentTarget.style.background = colors.gray50}
+                                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                             >
                                 <Avatar
-                                    size="small"
+                                    size={40}
                                     icon={<UserOutlined />}
                                     src={auth?.user?.avatar}
+                                    style={{ background: colors.primary }}
                                 />
-                                <Text>{auth?.user?.full_name || auth?.user?.email}</Text>
+                                <div style={{ display: 'none' }}>
+                                    <Text strong style={{ display: 'block', fontSize: 13 }}>
+                                        {auth?.user?.full_name || 'Admin'}
+                                    </Text>
+                                    <Text type="secondary" style={{ fontSize: 12 }}>
+                                        {auth?.user?.role?.name || 'Admin'}
+                                    </Text>
+                                </div>
                             </div>
                         </Dropdown>
-                    </div>
+                    </Space>
                 </Header>
 
-                <Content
-                    style={{
-                        margin: 24,
-                        padding: 24,
-                        background: colorBgContainer,
-                        borderRadius: borderRadiusLG,
-                        minHeight: 280,
-                    }}
-                >
-                    {children}
+                {/* Page Content */}
+                <Content style={{ padding: 24, minHeight: 'calc(100vh - 144px)' }}>
+                    {/* Breadcrumb */}
+                    {breadcrumbs && (
+                        <Breadcrumb
+                            style={{ marginBottom: 16 }}
+                            items={[
+                                { title: <Link href="/admin/dashboard"><HomeOutlined /> Dashboard</Link> },
+                                ...breadcrumbs.map((crumb, index) => ({
+                                    title: crumb.href ? (
+                                        <Link href={crumb.href}>{crumb.title}</Link>
+                                    ) : (
+                                        crumb.title
+                                    ),
+                                })),
+                            ]}
+                        />
+                    )}
+
+                    {/* Page Title */}
+                    {title && (
+                        <div style={{ marginBottom: 24 }}>
+                            <Title level={3} style={{ margin: 0, color: colors.gray900 }}>
+                                {title}
+                            </Title>
+                        </div>
+                    )}
+
+                    {/* Main Content Card */}
+                    <div
+                        className="fade-in-up"
+                        style={{
+                            background: '#fff',
+                            borderRadius: borderRadiusLG,
+                            padding: 24,
+                            boxShadow: shadows.sm,
+                            border: `1px solid ${colors.gray100}`,
+                            minHeight: 400,
+                        }}
+                    >
+                        {children}
+                    </div>
                 </Content>
 
-                <Footer style={{ textAlign: 'center', background: 'transparent' }}>
-                    ASA Peshawar &copy; {new Date().getFullYear()} - Educational Management System
+                {/* Footer */}
+                <Footer
+                    style={{
+                        textAlign: 'center',
+                        background: 'transparent',
+                        padding: '16px 24px',
+                        color: colors.gray500,
+                        fontSize: 13,
+                    }}
+                >
+                    <Text type="secondary">
+                        ASA Peshawar &copy; {new Date().getFullYear()} - Educational Management System
+                    </Text>
                 </Footer>
             </Layout>
         </Layout>

@@ -33,7 +33,8 @@ function Listing() {
   }
 
   const handleView = (record) => {
-    router.visit(route('admin.projects.show', record.id))
+    setRecord({ ...record, viewMode: true })
+    setVisible(true)
   }
 
   const handleUpdate = async (record) => {
@@ -84,15 +85,16 @@ function Listing() {
     isActive,
   })
 
-  const actionButtons = hasPermission('add project') ? [
+  const actionButtons = [
     {
-      key: 'add',
-      label: 'Add Project',
+      title: 'Add Project',
       icon: <PlusOutlined />,
       type: 'primary',
       onClick: handleCreate,
+      hasPermission: hasPermission('add project'),
+      showButton: true,
     },
-  ] : []
+  ]
 
   return (
     <PageContent title="Manage Projects" canvas>

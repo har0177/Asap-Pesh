@@ -18,6 +18,7 @@ const RoleModal = ({
   const [form] = Form.useForm()
   const [loading, setLoading] = useState(false)
   const isEdit = !!record?.id
+  const isViewMode = !!record?.viewMode
 
   useEffect(() => {
     if (visible && record) {
@@ -104,9 +105,9 @@ const RoleModal = ({
     <CustomModal
       open={visible}
       onCancel={handleClose}
-      title={isEdit ? 'Edit Role' : 'Create Role'}
+      title={isViewMode ? 'View Role' : (isEdit ? 'Edit Role' : 'Create Role')}
       width={800}
-      showSave
+      showSave={!isViewMode}
       saveText={isEdit ? 'Update' : 'Create'}
       onSave={handleSubmit}
       loading={loading}
@@ -114,6 +115,7 @@ const RoleModal = ({
       <Form
         form={form}
         layout="vertical"
+        disabled={isViewMode}
       >
         <Row gutter={16}>
           <Col span={12}>

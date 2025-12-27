@@ -17,7 +17,8 @@ const StudentModal = ({
 }) => {
   const [form] = Form.useForm()
   const [loading, setLoading] = useState(false)
-  const isEdit = !!record?.id
+  const isEdit = !!record?.id && !record?.viewMode
+  const isViewMode = !!record?.viewMode
 
   useEffect(() => {
     if (visible && record) {
@@ -83,9 +84,9 @@ const StudentModal = ({
     <CustomModal
       open={visible}
       onCancel={handleClose}
-      title={isEdit ? 'Edit Student' : 'View Student'}
+      title={isViewMode ? 'View Student' : 'Edit Student'}
       width={900}
-      showSave={isEdit}
+      showSave={!isViewMode && isEdit}
       saveText="Update"
       onSave={handleSubmit}
       loading={loading}
@@ -93,6 +94,7 @@ const StudentModal = ({
       <Form
         form={form}
         layout="vertical"
+        disabled={isViewMode}
       >
         <Row gutter={16}>
           <Col span={8}>

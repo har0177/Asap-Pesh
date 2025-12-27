@@ -1,53 +1,157 @@
 import React from 'react';
 import { Link } from '@inertiajs/react';
-import { Layout, Card, Typography, theme } from 'antd';
+import { Layout, Card, Typography, Space, theme } from 'antd';
+import { TrophyOutlined } from '@ant-design/icons';
+import { colors } from '@/theme.js';
 
 const { Content } = Layout;
 const { Title, Text } = Typography;
 
 export default function AuthLayout({ children, title = 'Welcome', subtitle }) {
     const {
-        token: { colorBgContainer, borderRadiusLG },
+        token: { borderRadiusLG },
     } = theme.useToken();
 
     return (
         <Layout
             style={{
                 minHeight: '100vh',
-                background: 'linear-gradient(135deg, #001529 0%, #003a70 100%)',
+                background: `linear-gradient(135deg, ${colors.secondary} 0%, ${colors.primary} 100%)`,
+                position: 'relative',
+                overflow: 'hidden',
             }}
         >
+            {/* Background Pattern */}
+            <div
+                style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: `
+                        radial-gradient(circle at 20% 80%, rgba(255,255,255,0.05) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(255,255,255,0.08) 0%, transparent 40%),
+                        radial-gradient(circle at 40% 40%, rgba(255,255,255,0.03) 0%, transparent 30%)
+                    `,
+                    pointerEvents: 'none',
+                }}
+            />
+
             <Content
                 style={{
                     display: 'flex',
                     justifyContent: 'center',
                     alignItems: 'center',
                     padding: 24,
+                    position: 'relative',
+                    zIndex: 1,
                 }}
             >
-                <Card
+                <div
+                    className="scale-in"
                     style={{
                         width: '100%',
-                        maxWidth: 420,
-                        borderRadius: borderRadiusLG,
-                        boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
+                        maxWidth: 440,
                     }}
                 >
-                    <div style={{ textAlign: 'center', marginBottom: 24 }}>
-                        <Link href="/">
-                            <Title level={2} style={{ marginBottom: 8, color: '#001529' }}>
+                    {/* Logo Card */}
+                    <div style={{ textAlign: 'center', marginBottom: 32 }}>
+                        <Link href="/" style={{ display: 'inline-block' }}>
+                            <div
+                                style={{
+                                    width: 80,
+                                    height: 80,
+                                    background: 'rgba(255,255,255,0.95)',
+                                    borderRadius: 16,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    margin: '0 auto 16px',
+                                    boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+                                    transition: 'transform 0.2s',
+                                    padding: 8,
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+                                onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                            >
+                                <img
+                                    src="/images/logo-sm.png"
+                                    alt="ASA Logo"
+                                    style={{ height: 60, width: 'auto' }}
+                                />
+                            </div>
+                            <Title level={3} style={{ color: '#fff', margin: 0, fontWeight: 700 }}>
                                 ASA Peshawar
                             </Title>
+                            <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13 }}>
+                                Excellence in Education
+                            </Text>
                         </Link>
-                        <Title level={4} style={{ marginTop: 0, marginBottom: 8 }}>
-                            {title}
-                        </Title>
-                        {subtitle && (
-                            <Text type="secondary">{subtitle}</Text>
-                        )}
                     </div>
-                    {children}
-                </Card>
+
+                    {/* Form Card */}
+                    <Card
+                        style={{
+                            borderRadius: 20,
+                            boxShadow: '0 16px 48px rgba(0,0,0,0.2)',
+                            border: 'none',
+                            overflow: 'hidden',
+                        }}
+                        bodyStyle={{ padding: 32 }}
+                    >
+                        {/* Card Header */}
+                        <div style={{ textAlign: 'center', marginBottom: 28 }}>
+                            <Title
+                                level={3}
+                                style={{
+                                    margin: 0,
+                                    color: colors.gray900,
+                                    fontWeight: 600,
+                                }}
+                            >
+                                {title}
+                            </Title>
+                            {subtitle && (
+                                <Text
+                                    type="secondary"
+                                    style={{
+                                        display: 'block',
+                                        marginTop: 8,
+                                        fontSize: 14,
+                                    }}
+                                >
+                                    {subtitle}
+                                </Text>
+                            )}
+                        </div>
+
+                        {/* Form Content */}
+                        {children}
+                    </Card>
+
+                    {/* Footer Links */}
+                    <div style={{ textAlign: 'center', marginTop: 24 }}>
+                        <Space split={<span style={{ color: 'rgba(255,255,255,0.3)' }}>|</span>}>
+                            <Link href="/" style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13 }}>
+                                Home
+                            </Link>
+                            <Link href="/contact" style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13 }}>
+                                Contact
+                            </Link>
+                            <Link href="/about" style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13 }}>
+                                About
+                            </Link>
+                        </Space>
+                    </div>
+
+                    {/* Copyright */}
+                    <div style={{ textAlign: 'center', marginTop: 32 }}>
+                        <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>
+                            &copy; {new Date().getFullYear()} ASA Peshawar. All rights reserved.
+                        </Text>
+                    </div>
+                </div>
             </Content>
         </Layout>
     );

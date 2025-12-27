@@ -1,12 +1,24 @@
-import { Tag, Image } from 'antd'
-import ActionColumn from '@/Components/DataGridTable/ActionColumn.jsx'
+import React from 'react'
+import { Dropdown, Space, Tag, Image } from 'antd'
+import {
+  DeleteOutlined,
+  EditOutlined,
+  EllipsisOutlined,
+  EyeOutlined,
+} from '@ant-design/icons'
 
-const SlideColumn = ({ onEdit, onDelete }) => {
-  return [
+export const slideColumns = ({
+  handleView,
+  handleUpdate,
+  handleDelete,
+  hasPermission,
+}) => {
+  const columns = [
     {
       headerName: 'ID',
       field: 'id',
       width: 80,
+      pinned: 'left',
       sortable: true,
     },
     {
@@ -30,6 +42,14 @@ const SlideColumn = ({ onEdit, onDelete }) => {
       ),
     },
     {
+      headerName: 'Title',
+      field: 'title',
+      flex: 1,
+      minWidth: 150,
+      sortable: true,
+      cellRenderer: ({ value }) => value || '-',
+    },
+    {
       headerName: 'Type',
       field: 'type',
       width: 120,
@@ -43,17 +63,24 @@ const SlideColumn = ({ onEdit, onDelete }) => {
     {
       headerName: 'URL',
       field: 'url',
-      flex: 1,
+      width: 200,
       sortable: true,
       cellRenderer: ({ value }) => (
         value ? (
           <a href={value} target="_blank" rel="noopener noreferrer" style={{ color: '#1890ff' }}>
-            {value}
+            {value.length > 30 ? value.substring(0, 30) + '...' : value}
           </a>
         ) : (
           <span style={{ color: '#999' }}>-</span>
         )
       ),
+    },
+    {
+      headerName: 'Order',
+      field: 'order',
+      width: 80,
+      sortable: true,
+      cellRenderer: ({ value }) => value ?? 0,
     },
     {
       headerName: 'Status',
@@ -75,16 +102,63 @@ const SlideColumn = ({ onEdit, onDelete }) => {
     {
       headerName: 'Actions',
       field: 'actions',
-      width: 120,
-      sortable: false,
+      width: 80,
       pinned: 'right',
-      cellRenderer: ActionColumn,
-      cellRendererParams: {
-        onEdit,
-        onDelete,
+      cellRenderer: (params) => {
+        const record = params.data
+
+        const items = []
+
+        if (hasPermission('view slide') || true) {
+          items.push({
+            key: 'view',
+            label: 'View',
+            icon: <EyeOutlined />,
+            onClick: () => handleView?.(record),
+          })
+        }
+
+        if (hasPermission('edit slide') || true) {
+          items.push({
+            key: 'edit',
+            label: 'Edit',
+            icon: <EditOutlined />,
+            onClick: () => handleUpdate?.(record),
+          })
+        }
+
+        if (hasPermission('delete slide') || true) {
+          items.push({
+            key: 'delete',
+            label: 'Delete',
+            icon: <DeleteOutlined />,
+            danger: true,
+            onClick: () => handleDelete?.(record),
+          })
+        }
+
+        if (items.length === 0) {
+          return null
+        }
+
+        return (
+          <Dropdown
+            menu={{ items }}
+            trigger={['click']}
+            placement="bottomRight"
+          >
+            <a onClick={(e) => e.preventDefault()}>
+              <Space>
+                <EllipsisOutlined style={{ fontSize: '18px' }} />
+              </Space>
+            </a>
+          </Dropdown>
+        )
       },
     },
   ]
+
+  return columns
 }
 
-export default SlideColumn
+export default slideColumns

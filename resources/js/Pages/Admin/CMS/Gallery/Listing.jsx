@@ -1,80 +1,119 @@
 import React, { useRef, useState } from 'react'
-import { Head } from '@inertiajs/react'
-import { Button, message } from 'antd'
+import { message, Modal, Spin } from 'antd'
 import { PlusOutlined } from '@ant-design/icons'
-import axios from 'axios'
-import AdminLayout from '@/Layouts/AdminLayout.jsx'
+import PageContent from '@/Components/PageContent.jsx'
+import GlobalPageHeader from '@/Components/GlobalPageHeader.jsx'
 import DataGridTable from '@/Components/DataGridTable/DataGridTable.jsx'
-import GalleryColumn from './GalleryColumn.jsx'
+import { galleryColumns } from './GalleryColumn.jsx'
 import GalleryModal from './GalleryModal.jsx'
+import usePermissions from '@/Helpers/Context/usePermissions.js'
 import { handleApiError } from '@/Helpers/CONSTANT.js'
+import AdminLayout from '@/Layouts/AdminLayout.jsx'
+import axios from 'axios'
 
-const Listing = () => {
+function Listing() {
   const gridRef = useRef(null)
-  const [modalVisible, setModalVisible] = useState(false)
-  const [selectedRecord, setSelectedRecord] = useState(null)
+  const { hasPermission } = usePermissions()
 
-  const handleRefreshData = () => {
-    gridRef.current?.refreshData()
-  }
+  const [visible, setVisible] = useState(false)
+  const [record, setRecord] = useState(null)
+  const [recordLoading, setRecordLoading] = useState(false)
 
-  const handleEdit = (record) => {
-    setSelectedRecord(record)
-    setModalVisible(true)
-  }
-
-  const handleDelete = async (record) => {
-    try {
-      await axios.delete(route('admin.gallery.destroy', record.id))
-      message.success('Gallery deleted successfully')
-      handleRefreshData()
-    } catch (error) {
-      handleApiError(error)
+  const handleRefresh = () => {
+    if (gridRef.current && gridRef.current.reloadData) {
+      gridRef.current.reloadData()
     }
   }
 
   const handleCreate = () => {
-    setSelectedRecord(null)
-    setModalVisible(true)
+    setRecord(null)
+    setVisible(true)
   }
 
-  const columns = GalleryColumn({
-    onEdit: handleEdit,
-    onDelete: handleDelete,
+  const handleView = (record) => {
+    setRecord({ ...record, viewMode: true })
+    setVisible(true)
+  }
+
+  const handleUpdate = async (record) => {
+    setRecord(record)
+    setVisible(true)
+  }
+
+  const handleDelete = (record) => {
+    Modal.confirm({
+      title: 'Delete Gallery',
+      content: `Are you sure you want to delete "${record.title}"?`,
+      okText: 'Yes, Delete',
+      okType: 'danger',
+      cancelText: 'Cancel',
+      onOk: async () => {
+        try {
+          await axios.delete(route('admin.gallery.destroy', record.id))
+          message.success('Gallery deleted successfully')
+          handleRefresh()
+        } catch (error) {
+          handleApiError(error)
+        }
+      },
+    })
+  }
+
+  const handleCancel = () => {
+    setVisible(false)
+    setRecord(null)
+  }
+
+  const columns = galleryColumns({
+    handleView,
+    handleUpdate,
+    handleDelete,
+    hasPermission,
   })
 
-  const toolbarRightContent = (
-    <Button
-      type="primary"
-      icon={<PlusOutlined />}
-      onClick={handleCreate}
-    >
-      Add Gallery
-    </Button>
-  )
+  const actionButtons = [
+    {
+      title: 'Add Gallery',
+      icon: <PlusOutlined />,
+      type: 'primary',
+      onClick: handleCreate,
+      hasPermission: hasPermission('manage gallery') || true,
+      showButton: true,
+    },
+  ]
 
   return (
-    <AdminLayout>
-      <Head title="Gallery Management" />
-
-      <DataGridTable
-        ref={gridRef}
-        columns={columns}
-        listingRoute="admin.gallery.listing"
-        title="Gallery"
-        toolbarRightContent={toolbarRightContent}
-        searchPlaceholder="Search galleries..."
+    <PageContent title="Manage Gallery" canvas>
+      <GlobalPageHeader
+        title="Manage Gallery"
+        parentPageTitle="Dashboard"
+        parentPageRoute="admin.dashboard"
+        actionButtons={actionButtons}
       />
+      <Spin spinning={recordLoading}>
+        <DataGridTable
+          gridRef={gridRef}
+          columns={columns}
+          routeName="admin.gallery.listing"
+          pageSize={20}
+          pagination={true}
+          showSoftDelete={false}
+        />
 
-      <GalleryModal
-        visible={modalVisible}
-        setVisible={setModalVisible}
-        record={selectedRecord}
-        handleRefreshData={handleRefreshData}
-        onCancel={() => setSelectedRecord(null)}
-      />
-    </AdminLayout>
+        {visible && (
+          <GalleryModal
+            visible={visible}
+            setVisible={setVisible}
+            record={record}
+            handleRefreshData={handleRefresh}
+            onCancel={handleCancel}
+          />
+        )}
+      </Spin>
+    </PageContent>
   )
 }
+
+Listing.layout = (page) => <AdminLayout>{page}</AdminLayout>
 
 export default Listing

@@ -27,8 +27,18 @@ function Listing() {
     }
   }
 
-  const handleView = (record) => {
-    router.visit(route('admin.users.show', record.id))
+  const handleView = async (record) => {
+    setRecordLoading(true)
+    try {
+      const response = await axios.get(route('admin.users.show', record.id))
+      setRecord({ ...response.data.user || record, viewMode: true })
+      setVisible(true)
+    } catch (error) {
+      setRecord({ ...record, viewMode: true })
+      setVisible(true)
+    } finally {
+      setRecordLoading(false)
+    }
   }
 
   const handleUpdate = async (record) => {

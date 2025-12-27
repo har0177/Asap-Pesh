@@ -9,6 +9,8 @@ export default function Register() {
   const { data, setData, post, processing, errors, reset } = useForm({
     first_name: '',
     last_name: '',
+    father_name: '',
+    username: '',
     email: '',
     phone: '',
     cnic: '',
@@ -66,6 +68,40 @@ export default function Register() {
                 size="large"
                 value={data.last_name}
                 onChange={(e) => setData('last_name', e.target.value)}
+              />
+            </Form.Item>
+          </Col>
+        </Row>
+
+        <Row gutter={12}>
+          <Col span={12}>
+            <Form.Item
+              label="Father's Name"
+              validateStatus={errors.father_name ? 'error' : ''}
+              help={errors.father_name}
+            >
+              <Input
+                prefix={<UserOutlined />}
+                placeholder="Father's name"
+                size="large"
+                value={data.father_name}
+                onChange={(e) => setData('father_name', e.target.value)}
+              />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item
+              label="Username"
+              validateStatus={errors.username ? 'error' : ''}
+              help={errors.username}
+              extra="3-8 characters"
+            >
+              <Input
+                prefix={<UserOutlined />}
+                placeholder="Username"
+                size="large"
+                value={data.username}
+                onChange={(e) => setData('username', e.target.value)}
               />
             </Form.Item>
           </Col>

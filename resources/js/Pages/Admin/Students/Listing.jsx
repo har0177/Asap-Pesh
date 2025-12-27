@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react'
-import { message, Modal, Spin } from 'antd'
-import { PlusOutlined } from '@ant-design/icons'
+import { message, Modal, Spin, Button, Space, Dropdown } from 'antd'
+import { PlusOutlined, IdcardOutlined, FileTextOutlined, DownOutlined } from '@ant-design/icons'
 import { router } from '@inertiajs/react'
 import PageContent from '@/Components/PageContent.jsx'
 import GlobalPageHeader from '@/Components/GlobalPageHeader.jsx'
@@ -27,8 +27,18 @@ function Listing() {
     }
   }
 
-  const handleView = (record) => {
-    router.visit(route('admin.students.show', record.id))
+  const handleView = async (record) => {
+    setRecordLoading(true)
+    try {
+      const response = await axios.get(route('admin.students.show', record.id))
+      setRecord({ ...response.data.student || record, viewMode: true })
+      setVisible(true)
+    } catch (error) {
+      setRecord({ ...record, viewMode: true })
+      setVisible(true)
+    } finally {
+      setRecordLoading(false)
+    }
   }
 
   const handleUpdate = async (record) => {
@@ -88,13 +98,57 @@ function Listing() {
     isActive,
   })
 
+  // Get all selected student IDs for bulk actions
+  const getSelectedIds = () => {
+    if (gridRef.current?.api) {
+      const selectedRows = gridRef.current.api.getSelectedRows()
+      return selectedRows.map(row => row.user_id).filter(Boolean)
+    }
+    return []
+  }
+
+  const handleBulkIdCards = () => {
+    const ids = getSelectedIds()
+    if (ids.length === 0) {
+      message.warning('Please select students first')
+      return
+    }
+    const params = ids.map(id => `id[]=${id}`).join('&')
+    window.open(`/student-card?${params}`, '_blank')
+  }
+
+  const handleAttendanceSheet = () => {
+    window.open('/attendance', '_blank')
+  }
+
+  const bulkMenuItems = [
+    {
+      key: 'id-cards',
+      label: 'Print Selected ID Cards',
+      icon: <IdcardOutlined />,
+      onClick: handleBulkIdCards,
+    },
+    {
+      key: 'attendance',
+      label: 'Attendance Sheet',
+      icon: <FileTextOutlined />,
+      onClick: handleAttendanceSheet,
+    },
+  ]
+
   return (
     <PageContent title="Manage Students" canvas>
       <GlobalPageHeader
         title="Manage Students"
         parentPageTitle="Dashboard"
         parentPageRoute="admin.dashboard"
-        actionButtons={[]}
+        actionButtons={[
+          <Dropdown key="bulk" menu={{ items: bulkMenuItems }} trigger={['click']}>
+            <Button icon={<IdcardOutlined />}>
+              Bulk Actions <DownOutlined />
+            </Button>
+          </Dropdown>,
+        ]}
       />
       <Spin spinning={recordLoading}>
         {hasPermission('manage students') && (

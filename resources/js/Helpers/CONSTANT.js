@@ -251,20 +251,22 @@ export const STUDENT_FILTER_FIELDS = {
     name: { name: 'name', label: 'Name' },
     cnic: { name: 'cnic', label: 'CNIC' },
     phone: { name: 'phone', label: 'Phone' },
+    reg_no: { name: 'reg_no', label: 'Reg No' },
   },
   SELECTS: {
     diploma_id: { name: 'diploma_id', label: 'Diploma', type: 'diplomas' },
-    batch_id: { name: 'batch_id', label: 'Batch', type: 'batches' },
     session_id: { name: 'session_id', label: 'Session', type: 'sessions' },
+    section_id: { name: 'section_id', label: 'Section', type: 'sections' },
     status: {
       name: 'status',
       label: 'Status',
       type: 'static',
       params: {
         options: [
-          { value: 'active', label: 'Active' },
-          { value: 'graduated', label: 'Graduated' },
-          { value: 'dropped', label: 'Dropped' },
+          { value: 'Active', label: 'Active' },
+          { value: 'Inactive', label: 'Inactive' },
+          { value: 'Graduated', label: 'Graduated' },
+          { value: 'Pending', label: 'Pending' },
         ]
       }
     },
@@ -303,18 +305,33 @@ export const PROJECT_FILTER_FIELDS = {
 export const APPLICATION_FILTER_FIELDS = {
   TEXTS: {
     applicant_name: { name: 'applicant_name', label: 'Applicant Name' },
+    cnic: { name: 'cnic', label: 'CNIC' },
   },
   SELECTS: {
     project_id: { name: 'project_id', label: 'Project', type: 'projects' },
+    diploma_id: { name: 'diploma_id', label: 'Diploma', type: 'diplomas' },
+    quota_id: { name: 'quota_id', label: 'Quota', type: 'quotas' },
     status: {
       name: 'status',
       label: 'Status',
       type: 'static',
       params: {
         options: [
-          { value: 'pending', label: 'Pending' },
-          { value: 'approved', label: 'Approved' },
-          { value: 'rejected', label: 'Rejected' },
+          { value: 'Pending', label: 'Pending' },
+          { value: 'Paid', label: 'Paid' },
+          { value: 'Approved', label: 'Approved' },
+          { value: 'Rejected', label: 'Rejected' },
+        ]
+      }
+    },
+    paid: {
+      name: 'paid',
+      label: 'Payment',
+      type: 'static',
+      params: {
+        options: [
+          { value: '1', label: 'Paid Only' },
+          { value: '0', label: 'Unpaid Only' },
         ]
       }
     },

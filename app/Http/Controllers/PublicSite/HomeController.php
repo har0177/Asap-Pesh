@@ -8,6 +8,7 @@ use App\Models\Employee;
 use App\Models\Gallery;
 use App\Models\NewsEvents;
 use App\Models\Project;
+use App\Models\Setting;
 use App\Models\Slide;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -155,6 +156,14 @@ class HomeController extends Controller
             ->orderBy('id')
             ->get()
             ->map(function ($employee) {
+                // Try both 'avatars' and 'photos' collections for compatibility
+                $photo = null;
+                if ($employee->hasMedia('avatars')) {
+                    $photo = $employee->getFirstMediaUrl('avatars');
+                } elseif ($employee->hasMedia('photos')) {
+                    $photo = $employee->getFirstMediaUrl('photos');
+                }
+
                 return [
                     'id' => $employee->id,
                     'name' => $employee->full_name,
@@ -163,9 +172,7 @@ class HomeController extends Controller
                     'qualification' => $employee->qualification ?? null,
                     'email' => $employee->email ?? null,
                     'phone' => $employee->contact_number,
-                    'photo' => $employee->hasMedia('photos')
-                        ? $employee->getFirstMediaUrl('photos')
-                        : null,
+                    'photo' => $photo,
                 ];
             });
 
@@ -206,6 +213,85 @@ class HomeController extends Controller
                     : null,
                 'created_at' => $event->created_at?->format('M d, Y'),
             ],
+        ]);
+    }
+
+    public function feeStructure(): Response
+    {
+        $content = Content::where('slug', 'fee-structure')->first();
+
+        // Get images from Content model (Media Library) or fallback to settings
+        $images = [];
+        if ($content && $content->hasMedia('images')) {
+            $images = $content->getMedia('images')->map(fn($media) => $media->getUrl())->toArray();
+        }
+
+        // Fallback to settings if no images in Content
+        if (empty($images)) {
+            $settingImage = Setting::get('fee_structure_image', '/fee-structure.jpg');
+            if ($settingImage) {
+                $images = [$settingImage];
+            }
+        }
+
+        return Inertia::render('Public/FeeStructure', [
+            'images' => $images,
+            'content' => $content ? [
+                'title' => $content->title,
+                'description' => $content->description,
+            ] : null,
+        ]);
+    }
+
+    public function agricultureScience(): Response
+    {
+        $content = Content::where('slug', 'agriculture-science')->first();
+
+        // Get images from Content model (Media Library)
+        $images = [];
+        if ($content && $content->hasMedia('images')) {
+            $images = $content->getMedia('images')->map(fn($media) => $media->getUrl())->toArray();
+        }
+
+        // Fallback to default paths if no uploaded images
+        if (empty($images)) {
+            $images = ['/das/1.jpg', '/das/2.jpg', '/das/3.jpg'];
+        }
+
+        return Inertia::render('Public/DiplomaDetail', [
+            'diploma' => 'agriculture',
+            'title' => $content?->title ?? Setting::get('diploma_das_title', 'Diploma in Agriculture Sciences'),
+            'description' => $content?->description ?? Setting::get('diploma_das_description', 'The Diploma in Agriculture Sciences (DAS) is a comprehensive 3-year program designed to equip students with practical knowledge and skills in modern agricultural practices, crop management, soil science, and sustainable farming techniques.'),
+            'duration' => Setting::get('diploma_das_duration', '3 Years'),
+            'eligibility' => Setting::get('diploma_das_eligibility', 'Matric (Science)'),
+            'images' => $images,
+            'contentId' => $content?->id,
+        ]);
+    }
+
+    public function veterinaryScience(): Response
+    {
+        $content = Content::where('slug', 'veterinary-science')->first();
+
+        // Get images from Content model (Media Library)
+        $images = [];
+        if ($content && $content->hasMedia('images')) {
+            $images = $content->getMedia('images')->map(fn($media) => $media->getUrl())->toArray();
+        }
+
+        // Fallback to default paths if no uploaded images
+        if (empty($images)) {
+            $images = ['/dvs/1.jpg', '/dvs/2.jpg', '/dvs/3.jpg'];
+        }
+
+        return Inertia::render('Public/DiplomaDetail', [
+            'diploma' => 'veterinary',
+            'title' => $content?->title ?? Setting::get('diploma_dvs_title', 'Diploma in Veterinary Sciences'),
+            'description' => $content?->description ?? Setting::get('diploma_dvs_description', 'The Diploma in Veterinary Sciences (DVS) is a 3-year professional program focused on animal health, livestock management, disease prevention, and veterinary care practices.'),
+            'duration' => Setting::get('diploma_dvs_duration', '3 Years'),
+            'eligibility' => Setting::get('diploma_dvs_eligibility', 'Matric (Science)'),
+            'images' => $images,
+            'contentId' => $content?->id,
         ]);
     }
 }

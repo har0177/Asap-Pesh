@@ -1,5 +1,5 @@
 import React from 'react'
-import { Avatar, Dropdown, Space, Tag, Typography } from 'antd'
+import { Avatar, Dropdown, Space, Tag, Typography, Tooltip } from 'antd'
 import {
   DeleteOutlined,
   EditOutlined,
@@ -7,6 +7,7 @@ import {
   EyeOutlined,
   UndoOutlined,
   UserOutlined,
+  IdcardOutlined,
 } from '@ant-design/icons'
 import dayjs from 'dayjs'
 
@@ -155,6 +156,37 @@ export const studentColumns = ({
       cellRenderer: (params) => params.data?.district?.name || '-',
     },
     {
+      headerName: 'Status',
+      field: 'status',
+      width: 100,
+      cellRenderer: (params) => {
+        const status = params.value || 'Pending'
+        const colors = {
+          Active: 'green',
+          Inactive: 'red',
+          Graduated: 'blue',
+          Pending: 'orange',
+        }
+        return <Tag color={colors[status] || 'default'}>{status}</Tag>
+      },
+      context: {
+        filterType: 'select',
+        filterOptions: [
+          { value: 'Active', label: 'Active' },
+          { value: 'Inactive', label: 'Inactive' },
+          { value: 'Graduated', label: 'Graduated' },
+          { value: 'Pending', label: 'Pending' },
+        ],
+      },
+    },
+    {
+      headerName: 'Reg No',
+      field: 'reg_no',
+      width: 120,
+      sortable: true,
+      cellRenderer: (params) => params.value || '-',
+    },
+    {
       headerName: 'Created',
       field: 'created_at',
       width: 120,
@@ -164,6 +196,29 @@ export const studentColumns = ({
       ),
       context: {
         filterType: 'date',
+      },
+    },
+    {
+      headerName: 'ID Card',
+      field: 'id_card',
+      width: 80,
+      pinned: 'right',
+      cellRenderer: (params) => {
+        const record = params.data
+        if (!record?.user_id) return null
+
+        return (
+          <Tooltip title="Print ID Card">
+            <a
+              href={`/student-card?id=${record.user_id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: '#1890ff', fontSize: 16 }}
+            >
+              <IdcardOutlined />
+            </a>
+          </Tooltip>
+        )
       },
     },
     {
@@ -194,6 +249,23 @@ export const studentColumns = ({
               onClick: () => handleUpdate?.(record),
             })
           }
+
+          // ID Card link in dropdown
+          if (record?.user_id) {
+            items.push({
+              key: 'id-card',
+              label: (
+                <a href={`/student-card?id=${record.user_id}`} target="_blank" rel="noopener noreferrer">
+                  Print ID Card
+                </a>
+              ),
+              icon: <IdcardOutlined />,
+            })
+          }
+
+          items.push({
+            type: 'divider',
+          })
 
           if (hasPermission('delete student')) {
             items.push({

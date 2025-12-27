@@ -1,80 +1,119 @@
 import React, { useRef, useState } from 'react'
-import { Head } from '@inertiajs/react'
-import { Button, message, Popconfirm } from 'antd'
+import { message, Modal, Spin } from 'antd'
 import { PlusOutlined } from '@ant-design/icons'
-import axios from 'axios'
-import AdminLayout from '@/Layouts/AdminLayout.jsx'
+import PageContent from '@/Components/PageContent.jsx'
+import GlobalPageHeader from '@/Components/GlobalPageHeader.jsx'
 import DataGridTable from '@/Components/DataGridTable/DataGridTable.jsx'
-import SlideColumn from './SlideColumn.jsx'
+import { slideColumns } from './SlideColumn.jsx'
 import SlideModal from './SlideModal.jsx'
+import usePermissions from '@/Helpers/Context/usePermissions.js'
 import { handleApiError } from '@/Helpers/CONSTANT.js'
+import AdminLayout from '@/Layouts/AdminLayout.jsx'
+import axios from 'axios'
 
-const Listing = () => {
+function Listing() {
   const gridRef = useRef(null)
-  const [modalVisible, setModalVisible] = useState(false)
-  const [selectedRecord, setSelectedRecord] = useState(null)
+  const { hasPermission } = usePermissions()
 
-  const handleRefreshData = () => {
-    gridRef.current?.refreshData()
-  }
+  const [visible, setVisible] = useState(false)
+  const [record, setRecord] = useState(null)
+  const [recordLoading, setRecordLoading] = useState(false)
 
-  const handleEdit = (record) => {
-    setSelectedRecord(record)
-    setModalVisible(true)
-  }
-
-  const handleDelete = async (record) => {
-    try {
-      await axios.delete(route('admin.slides.destroy', record.id))
-      message.success('Slide deleted successfully')
-      handleRefreshData()
-    } catch (error) {
-      handleApiError(error)
+  const handleRefresh = () => {
+    if (gridRef.current && gridRef.current.reloadData) {
+      gridRef.current.reloadData()
     }
   }
 
   const handleCreate = () => {
-    setSelectedRecord(null)
-    setModalVisible(true)
+    setRecord(null)
+    setVisible(true)
   }
 
-  const columns = SlideColumn({
-    onEdit: handleEdit,
-    onDelete: handleDelete,
+  const handleView = (record) => {
+    setRecord({ ...record, viewMode: true })
+    setVisible(true)
+  }
+
+  const handleUpdate = async (record) => {
+    setRecord(record)
+    setVisible(true)
+  }
+
+  const handleDelete = (record) => {
+    Modal.confirm({
+      title: 'Delete Slide',
+      content: `Are you sure you want to delete this slide?`,
+      okText: 'Yes, Delete',
+      okType: 'danger',
+      cancelText: 'Cancel',
+      onOk: async () => {
+        try {
+          await axios.delete(route('admin.slides.destroy', record.id))
+          message.success('Slide deleted successfully')
+          handleRefresh()
+        } catch (error) {
+          handleApiError(error)
+        }
+      },
+    })
+  }
+
+  const handleCancel = () => {
+    setVisible(false)
+    setRecord(null)
+  }
+
+  const columns = slideColumns({
+    handleView,
+    handleUpdate,
+    handleDelete,
+    hasPermission,
   })
 
-  const toolbarRightContent = (
-    <Button
-      type="primary"
-      icon={<PlusOutlined />}
-      onClick={handleCreate}
-    >
-      Add Slide
-    </Button>
-  )
+  const actionButtons = [
+    {
+      title: 'Add Slide',
+      icon: <PlusOutlined />,
+      type: 'primary',
+      onClick: handleCreate,
+      hasPermission: hasPermission('add slide') || true,
+      showButton: true,
+    },
+  ]
 
   return (
-    <AdminLayout>
-      <Head title="Slides Management" />
-
-      <DataGridTable
-        ref={gridRef}
-        columns={columns}
-        listingRoute="admin.slides.listing"
-        title="Slides"
-        toolbarRightContent={toolbarRightContent}
-        searchPlaceholder="Search slides..."
+    <PageContent title="Manage Slides" canvas>
+      <GlobalPageHeader
+        title="Manage Slides"
+        parentPageTitle="Dashboard"
+        parentPageRoute="admin.dashboard"
+        actionButtons={actionButtons}
       />
+      <Spin spinning={recordLoading}>
+        <DataGridTable
+          gridRef={gridRef}
+          columns={columns}
+          routeName="admin.slides.listing"
+          pageSize={20}
+          pagination={true}
+          showSoftDelete={false}
+        />
 
-      <SlideModal
-        visible={modalVisible}
-        setVisible={setModalVisible}
-        record={selectedRecord}
-        handleRefreshData={handleRefreshData}
-        onCancel={() => setSelectedRecord(null)}
-      />
-    </AdminLayout>
+        {visible && (
+          <SlideModal
+            visible={visible}
+            setVisible={setVisible}
+            record={record}
+            handleRefreshData={handleRefresh}
+            onCancel={handleCancel}
+          />
+        )}
+      </Spin>
+    </PageContent>
   )
 }
+
+Listing.layout = (page) => <AdminLayout>{page}</AdminLayout>
 
 export default Listing

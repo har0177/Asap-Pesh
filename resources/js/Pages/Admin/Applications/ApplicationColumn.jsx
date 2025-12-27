@@ -1,5 +1,5 @@
 import React from 'react'
-import { Avatar, Dropdown, Space, Tag, Typography } from 'antd'
+import { Avatar, Dropdown, Space, Tag, Typography, Tooltip } from 'antd'
 import {
   DeleteOutlined,
   EditOutlined,
@@ -7,6 +7,11 @@ import {
   EyeOutlined,
   UndoOutlined,
   UserOutlined,
+  PrinterOutlined,
+  FileTextOutlined,
+  DollarOutlined,
+  CheckCircleOutlined,
+  UserAddOutlined,
 } from '@ant-design/icons'
 import dayjs from 'dayjs'
 
@@ -116,10 +121,20 @@ export const applicationColumns = ({
     {
       headerName: 'Status',
       field: 'status',
-      width: 120,
+      width: 150,
       cellRenderer: (params) => {
         const status = params.value || 'Pending'
-        return <Tag color={STATUS_COLORS[status] || 'default'}>{status}</Tag>
+        const isAdmitted = params.data?.is_admitted
+        return (
+          <Space size={4}>
+            <Tag color={STATUS_COLORS[status] || 'default'}>{status}</Tag>
+            {isAdmitted && (
+              <Tooltip title="Student Admitted">
+                <Tag color="green" icon={<CheckCircleOutlined />}>Admitted</Tag>
+              </Tooltip>
+            )}
+          </Space>
+        )
       },
       context: {
         filterType: 'select',
@@ -159,6 +174,41 @@ export const applicationColumns = ({
       },
     },
     {
+      headerName: 'Print',
+      field: 'print',
+      width: 100,
+      pinned: 'right',
+      cellRenderer: (params) => {
+        const record = params.data
+        if (!record) return null
+
+        return (
+          <Space size={4}>
+            <Tooltip title="Print Challan">
+              <a
+                href={`/print-challan/${record.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: '#1890ff' }}
+              >
+                <DollarOutlined />
+              </a>
+            </Tooltip>
+            <Tooltip title="Print Form">
+              <a
+                href={`/print-form/${record.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: '#52c41a' }}
+              >
+                <FileTextOutlined />
+              </a>
+            </Tooltip>
+          </Space>
+        )
+      },
+    },
+    {
       headerName: 'Actions',
       field: 'actions',
       width: 80,
@@ -186,6 +236,47 @@ export const applicationColumns = ({
               onClick: () => handleUpdate?.(record),
             })
           }
+
+          // Add Admit action if paid but not yet admitted
+          if (hasPermission('edit application') && record.status === 'Paid' && !record.is_admitted) {
+            items.push({
+              key: 'admit',
+              label: 'Admit Student',
+              icon: <UserAddOutlined />,
+              onClick: () => {
+                window.location.href = `/admin/applications/${record.id}/admit`
+              },
+            })
+          }
+
+          items.push({
+            type: 'divider',
+          })
+
+          // Print options in dropdown too
+          items.push({
+            key: 'print-challan',
+            label: (
+              <a href={`/print-challan/${record.id}`} target="_blank" rel="noopener noreferrer">
+                Print Challan
+              </a>
+            ),
+            icon: <DollarOutlined />,
+          })
+
+          items.push({
+            key: 'print-form',
+            label: (
+              <a href={`/print-form/${record.id}`} target="_blank" rel="noopener noreferrer">
+                Print Form
+              </a>
+            ),
+            icon: <FileTextOutlined />,
+          })
+
+          items.push({
+            type: 'divider',
+          })
 
           if (hasPermission('manage applications')) {
             items.push({

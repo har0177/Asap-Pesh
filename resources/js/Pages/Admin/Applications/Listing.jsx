@@ -27,7 +27,8 @@ function Listing() {
   }
 
   const handleView = (record) => {
-    router.visit(route('admin.applications.show', record.id))
+    setRecord({ ...record, viewMode: true })
+    setVisible(true)
   }
 
   const handleUpdate = async (record) => {

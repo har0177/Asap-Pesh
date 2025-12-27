@@ -37,22 +37,22 @@ const Contact = () => {
 
   const contactInfo = [
     {
-      icon: <EnvironmentOutlined style={{ fontSize: 24, color: '#1890ff' }} />,
+      icon: <EnvironmentOutlined style={{ fontSize: 24, color: '#1B5E20' }} />,
       title: 'Address',
-      content: 'ASA Peshawar, Peshawar, Khyber Pakhtunkhwa, Pakistan',
+      content: 'Agriculture Services Academy, Opposite Islamia College, Jamrud Road, Peshawar',
     },
     {
-      icon: <PhoneOutlined style={{ fontSize: 24, color: '#52c41a' }} />,
+      icon: <PhoneOutlined style={{ fontSize: 24, color: '#2E7D32' }} />,
       title: 'Phone',
-      content: '+92-91-XXXXXXX',
+      content: '091-9224234',
     },
     {
-      icon: <MailOutlined style={{ fontSize: 24, color: '#faad14' }} />,
+      icon: <MailOutlined style={{ fontSize: 24, color: '#C49A00' }} />,
       title: 'Email',
-      content: 'info@asap.edu.pk',
+      content: 'admission@asap.edu.pk',
     },
     {
-      icon: <ClockCircleOutlined style={{ fontSize: 24, color: '#722ed1' }} />,
+      icon: <ClockCircleOutlined style={{ fontSize: 24, color: '#1B5E20' }} />,
       title: 'Office Hours',
       content: 'Monday - Friday: 9:00 AM - 4:00 PM',
     },
@@ -66,7 +66,7 @@ const Contact = () => {
       <div
         style={{
           padding: '80px 48px',
-          background: 'linear-gradient(135deg, #001529 0%, #003a70 100%)',
+          background: 'linear-gradient(135deg, #1B3A1B 0%, #1B5E20 100%)',
           textAlign: 'center',
         }}
       >
@@ -192,19 +192,34 @@ const Contact = () => {
       </div>
 
       {/* Map Section */}
-      <div style={{ height: 400, background: '#e0e0e0' }}>
-        <div
-          style={{
-            height: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexDirection: 'column',
-          }}
+      <div style={{ height: 400 }}>
+        <iframe
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d829.6973096289738!2d71.48117584!3d33.99718754!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x38d91762009f64dd%3A0x635effe310fa641d!2sAgricultural%20Service%20Academy%20Peshawar!5e0!3m2!1sen!2s!4v1703686500000!5m2!1sen!2s"
+          width="100%"
+          height="100%"
+          style={{ border: 0 }}
+          allowFullScreen=""
+          loading="lazy"
+          referrerPolicy="no-referrer-when-downgrade"
+          title="ASA Peshawar Location"
+        />
+      </div>
+
+      {/* Prospectus Section */}
+      <div style={{ padding: '64px 48px', background: '#E8F5E9', textAlign: 'center' }}>
+        <Title level={3} style={{ marginBottom: 16 }}>Download Our Prospectus</Title>
+        <Paragraph style={{ marginBottom: 24, maxWidth: 600, margin: '0 auto 24px' }}>
+          Get detailed information about our programs, courses, fee structure, and admission process.
+        </Paragraph>
+        <Button
+          type="primary"
+          size="large"
+          href="https://asap.edu.pk/Prospectus.pdf"
+          target="_blank"
+          style={{ background: '#1B5E20', borderColor: '#1B5E20' }}
         >
-          <EnvironmentOutlined style={{ fontSize: 64, color: '#999', marginBottom: 16 }} />
-          <Text type="secondary">Google Maps integration coming soon</Text>
-        </div>
+          Download Prospectus (PDF)
+        </Button>
       </div>
     </PublicLayout>
   )

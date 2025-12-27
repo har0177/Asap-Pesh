@@ -16,6 +16,7 @@ const ContentModal = ({
   const [form] = Form.useForm()
   const [loading, setLoading] = useState(false)
   const isEdit = !!record?.id
+  const isViewMode = !!record?.viewMode
 
   useEffect(() => {
     if (visible && record) {
@@ -75,9 +76,9 @@ const ContentModal = ({
     <CustomModal
       open={visible}
       onCancel={handleClose}
-      title={isEdit ? 'Edit Content' : 'Create Content'}
+      title={isViewMode ? 'View Content' : (isEdit ? 'Edit Content' : 'Create Content')}
       width={800}
-      showSave
+      showSave={!isViewMode}
       saveText={isEdit ? 'Update' : 'Create'}
       onSave={handleSubmit}
       loading={loading}
@@ -85,6 +86,7 @@ const ContentModal = ({
       <Form
         form={form}
         layout="vertical"
+        disabled={isViewMode}
       >
         <Row gutter={16}>
           <Col span={16}>

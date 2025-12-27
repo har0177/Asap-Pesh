@@ -164,6 +164,7 @@ class ContentController extends Controller
 
     public function destroy(Request $request, Content $content)
     {
+        $content->clearMediaCollection('images');
         $content->delete();
 
         Notify::success('Content deleted successfully.');
@@ -174,5 +175,94 @@ class ContentController extends Controller
 
         return redirect()->route('admin.content.index')
             ->with('success', 'Content deleted successfully.');
+    }
+
+    /**
+     * Upload images to content (supports multiple files)
+     */
+    public function uploadImages(Request $request, Content $content): JsonResponse
+    {
+        try {
+            $request->validate([
+                'images' => 'required|array',
+                'images.*' => 'image|max:10240', // 10MB max per image
+            ]);
+
+            $uploadedImages = [];
+            foreach ($request->file('images') as $image) {
+                $media = $content->addMedia($image)
+                    ->toMediaCollection('images');
+
+                $uploadedImages[] = [
+                    'id' => $media->id,
+                    'url' => $media->getUrl(),
+                    'name' => $media->name,
+                ];
+            }
+
+            Notify::success(count($uploadedImages) . ' image(s) uploaded successfully.');
+
+            return Response::success([
+                'message' => count($uploadedImages) . ' image(s) uploaded successfully',
+                'images' => $uploadedImages,
+            ]);
+        } catch (\Throwable $e) {
+            return Response::error($e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Delete a specific image
+     */
+    public function deleteImage(Content $content, int $mediaId): JsonResponse
+    {
+        try {
+            $media = $content->getMedia('images')->where('id', $mediaId)->first();
+
+            if (!$media) {
+                return Response::error('Image not found', 404);
+            }
+
+            $media->delete();
+
+            Notify::success('Image deleted successfully.');
+
+            return Response::success(['message' => 'Image deleted successfully']);
+        } catch (\Throwable $e) {
+            return Response::error($e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Get content with all images (for public pages)
+     */
+    public function getWithImages(string $slug): JsonResponse
+    {
+        try {
+            $content = Content::where('slug', $slug)->first();
+
+            if (!$content) {
+                return Response::error('Content not found', 404);
+            }
+
+            return Response::success([
+                'content' => [
+                    'id' => $content->id,
+                    'title' => $content->title,
+                    'slug' => $content->slug,
+                    'type' => $content->type,
+                    'body' => $content->body,
+                    'images' => $content->getMedia('images')->map(function ($media) {
+                        return [
+                            'id' => $media->id,
+                            'url' => $media->getUrl(),
+                            'name' => $media->name,
+                        ];
+                    }),
+                ],
+            ]);
+        } catch (\Throwable $e) {
+            return Response::error($e->getMessage(), 500);
+        }
     }
 }

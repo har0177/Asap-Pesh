@@ -1,85 +1,119 @@
 import React, { useRef, useState } from 'react'
-import { Head, router } from '@inertiajs/react'
-import { Button, message } from 'antd'
+import { message, Modal, Spin } from 'antd'
 import { PlusOutlined } from '@ant-design/icons'
-import axios from 'axios'
-import AdminLayout from '@/Layouts/AdminLayout.jsx'
+import PageContent from '@/Components/PageContent.jsx'
+import GlobalPageHeader from '@/Components/GlobalPageHeader.jsx'
 import DataGridTable from '@/Components/DataGridTable/DataGridTable.jsx'
-import ContentColumn from './ContentColumn.jsx'
+import { contentColumns } from './ContentColumn.jsx'
 import ContentModal from './ContentModal.jsx'
+import usePermissions from '@/Helpers/Context/usePermissions.js'
 import { handleApiError } from '@/Helpers/CONSTANT.js'
+import AdminLayout from '@/Layouts/AdminLayout.jsx'
+import axios from 'axios'
 
-const Listing = () => {
+function Listing() {
   const gridRef = useRef(null)
-  const [modalVisible, setModalVisible] = useState(false)
-  const [selectedRecord, setSelectedRecord] = useState(null)
+  const { hasPermission } = usePermissions()
 
-  const handleRefreshData = () => {
-    gridRef.current?.refreshData()
-  }
+  const [visible, setVisible] = useState(false)
+  const [record, setRecord] = useState(null)
+  const [recordLoading, setRecordLoading] = useState(false)
 
-  const handleEdit = (record) => {
-    setSelectedRecord(record)
-    setModalVisible(true)
-  }
-
-  const handleView = (record) => {
-    router.visit(route('admin.content.show', record.id))
-  }
-
-  const handleDelete = async (record) => {
-    try {
-      await axios.delete(route('admin.content.destroy', record.id))
-      message.success('Content deleted successfully')
-      handleRefreshData()
-    } catch (error) {
-      handleApiError(error)
+  const handleRefresh = () => {
+    if (gridRef.current && gridRef.current.reloadData) {
+      gridRef.current.reloadData()
     }
   }
 
   const handleCreate = () => {
-    setSelectedRecord(null)
-    setModalVisible(true)
+    setRecord(null)
+    setVisible(true)
   }
 
-  const columns = ContentColumn({
-    onEdit: handleEdit,
-    onDelete: handleDelete,
-    onView: handleView,
+  const handleView = (record) => {
+    setRecord({ ...record, viewMode: true })
+    setVisible(true)
+  }
+
+  const handleUpdate = async (record) => {
+    setRecord(record)
+    setVisible(true)
+  }
+
+  const handleDelete = (record) => {
+    Modal.confirm({
+      title: 'Delete Content',
+      content: `Are you sure you want to delete "${record.title}"?`,
+      okText: 'Yes, Delete',
+      okType: 'danger',
+      cancelText: 'Cancel',
+      onOk: async () => {
+        try {
+          await axios.delete(route('admin.content.destroy', record.id))
+          message.success('Content deleted successfully')
+          handleRefresh()
+        } catch (error) {
+          handleApiError(error)
+        }
+      },
+    })
+  }
+
+  const handleCancel = () => {
+    setVisible(false)
+    setRecord(null)
+  }
+
+  const columns = contentColumns({
+    handleView,
+    handleUpdate,
+    handleDelete,
+    hasPermission,
   })
 
-  const toolbarRightContent = (
-    <Button
-      type="primary"
-      icon={<PlusOutlined />}
-      onClick={handleCreate}
-    >
-      Add Content
-    </Button>
-  )
+  const actionButtons = [
+    {
+      title: 'Add Content',
+      icon: <PlusOutlined />,
+      type: 'primary',
+      onClick: handleCreate,
+      hasPermission: hasPermission('manage cms') || true,
+      showButton: true,
+    },
+  ]
 
   return (
-    <AdminLayout>
-      <Head title="Content Management" />
-
-      <DataGridTable
-        ref={gridRef}
-        columns={columns}
-        listingRoute="admin.content.listing"
-        title="Content"
-        toolbarRightContent={toolbarRightContent}
-        searchPlaceholder="Search content..."
+    <PageContent title="Manage Content" canvas>
+      <GlobalPageHeader
+        title="Manage Content"
+        parentPageTitle="Dashboard"
+        parentPageRoute="admin.dashboard"
+        actionButtons={actionButtons}
       />
+      <Spin spinning={recordLoading}>
+        <DataGridTable
+          gridRef={gridRef}
+          columns={columns}
+          routeName="admin.content.listing"
+          pageSize={20}
+          pagination={true}
+          showSoftDelete={false}
+        />
 
-      <ContentModal
-        visible={modalVisible}
-        setVisible={setModalVisible}
-        record={selectedRecord}
-        handleRefreshData={handleRefreshData}
-        onCancel={() => setSelectedRecord(null)}
-      />
-    </AdminLayout>
+        {visible && (
+          <ContentModal
+            visible={visible}
+            setVisible={setVisible}
+            record={record}
+            handleRefreshData={handleRefresh}
+            onCancel={handleCancel}
+          />
+        )}
+      </Spin>
+    </PageContent>
   )
 }
+
+Listing.layout = (page) => <AdminLayout>{page}</AdminLayout>
 
 export default Listing

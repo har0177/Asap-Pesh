@@ -18,6 +18,7 @@ const ProjectModal = ({
   const [form] = Form.useForm()
   const [loading, setLoading] = useState(false)
   const isEdit = !!record?.id
+  const isViewMode = !!record?.viewMode
 
   useEffect(() => {
     if (visible && record) {
@@ -83,9 +84,9 @@ const ProjectModal = ({
     <CustomModal
       open={visible}
       onCancel={handleClose}
-      title={isEdit ? 'Edit Project' : 'Create Project'}
+      title={isViewMode ? 'View Project' : (isEdit ? 'Edit Project' : 'Create Project')}
       width={800}
-      showSave
+      showSave={!isViewMode}
       saveText={isEdit ? 'Update' : 'Create'}
       onSave={handleSubmit}
       loading={loading}
@@ -93,6 +94,7 @@ const ProjectModal = ({
       <Form
         form={form}
         layout="vertical"
+        disabled={isViewMode}
       >
         <Row gutter={16}>
           <Col span={16}>
@@ -113,6 +115,7 @@ const ProjectModal = ({
               <ProSelect
                 type="diplomas"
                 placeholder="Select diploma"
+                initialOptions={record?.diploma ? [{ value: record.diploma.id, label: record.diploma.name }] : []}
               />
             </Form.Item>
           </Col>

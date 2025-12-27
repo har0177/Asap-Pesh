@@ -16,6 +16,7 @@ const SlideModal = ({
   const [loading, setLoading] = useState(false)
   const [fileList, setFileList] = useState([])
   const isEdit = !!record?.id
+  const isViewMode = !!record?.viewMode
 
   useEffect(() => {
     if (visible && record) {
@@ -103,9 +104,9 @@ const SlideModal = ({
     <CustomModal
       open={visible}
       onCancel={handleClose}
-      title={isEdit ? 'Edit Slide' : 'Create Slide'}
+      title={isViewMode ? 'View Slide' : (isEdit ? 'Edit Slide' : 'Create Slide')}
       width={600}
-      showSave
+      showSave={!isViewMode}
       saveText={isEdit ? 'Update' : 'Create'}
       onSave={handleSubmit}
       loading={loading}
@@ -113,6 +114,7 @@ const SlideModal = ({
       <Form
         form={form}
         layout="vertical"
+        disabled={isViewMode}
       >
         <Row gutter={16}>
           <Col span={12}>
