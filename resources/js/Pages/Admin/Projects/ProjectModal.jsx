@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Col, Form, Input, Row, message, DatePicker, InputNumber, Switch, Select } from 'antd'
+import { Col, Form, Input, Row, message, DatePicker, InputNumber, Switch } from 'antd'
 import axios from 'axios'
 import CustomModal from '@/Components/CustomModal.jsx'
 import { ProSelect } from '@/Components/AntDesignExtensions/ProSelect.jsx'
@@ -65,7 +65,7 @@ const ProjectModal = ({
       handleRefreshData?.()
     } catch (error) {
       if (error.errorFields) {
-        console.log('Validation failed:', error)
+        // Validation error - form will show field errors
       } else {
         handleApiError(error)
       }
@@ -165,18 +165,15 @@ const ProjectModal = ({
             <Form.Item
               name="quota"
               label="Quota Categories"
+              rules={[{ required: true, message: 'Please select at least one quota category' }]}
             >
-              <Select
+              <ProSelect
+                type="quotas"
                 mode="multiple"
                 placeholder="Select quota categories"
-                options={[
-                  { value: 'Open Merit', label: 'Open Merit' },
-                  { value: 'Disable Person', label: 'Disable Person' },
-                  { value: 'Minorities', label: 'Minorities' },
-                  { value: 'Remote Areas', label: 'Remote Areas' },
-                  { value: 'South Punjab', label: 'South Punjab' },
-                  { value: 'Female', label: 'Female' },
-                ]}
+                initialOptions={
+                  record?.quotaDetails?.map(q => ({ value: q.id, label: q.name })) || []
+                }
               />
             </Form.Item>
           </Col>

@@ -30,6 +30,7 @@ import {
 import { useSetRecoilState } from 'recoil';
 import { userAtom, permissionsAtom } from '@/Helpers/atom.js';
 import { colors, shadows } from '@/theme.js';
+import useIsMobile from '@/Hooks/useIsMobile.js';
 
 const { Header, Sider, Content, Footer } = Layout;
 const { Text, Title } = Typography;
@@ -53,12 +54,29 @@ const menuItems = [
 
 export default function StudentLayout({ children, title }) {
     const { auth, flash, profileCompletionPercent } = usePage().props;
+    const currentUrl = usePage().url;
     const setUser = useSetRecoilState(userAtom);
     const setPermissions = useSetRecoilState(permissionsAtom);
-    const [collapsed, setCollapsed] = useState(false);
+    const isMobile = useIsMobile();
+    const [collapsed, setCollapsed] = useState(isMobile);
     const {
         token: { borderRadiusLG },
     } = theme.useToken();
+
+    // Auto-collapse sidebar on mobile
+    useEffect(() => {
+        setCollapsed(isMobile);
+    }, [isMobile]);
+
+    // Determine selected menu key based on current URL
+    const getSelectedKey = () => {
+        const path = currentUrl?.split('?')[0] || '';
+        if (path.includes('/student/profile')) return 'profile';
+        if (path.includes('/student/education')) return 'education';
+        if (path.includes('/student/apply')) return 'apply';
+        if (path === '/') return 'home';
+        return 'dashboard';
+    };
 
     // Set user and permissions in Recoil state
     useEffect(() => {
@@ -192,7 +210,7 @@ export default function StudentLayout({ children, title }) {
                 <Menu
                     theme="dark"
                     mode="inline"
-                    defaultSelectedKeys={['dashboard']}
+                    selectedKeys={[getSelectedKey()]}
                     items={menuItems}
                     style={{
                         borderRight: 0,

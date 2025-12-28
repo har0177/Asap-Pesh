@@ -17,7 +17,7 @@ class DropdownController extends Controller
      */
     public function __invoke(Request $request, string $type): JsonResponse
     {
-        $search = $request->input('q', '');
+        $search = $request->input('q', '') ?? '';
         $params = $request->except(['q', 'type']);
 
         $data = match ($type) {
@@ -30,6 +30,7 @@ class DropdownController extends Controller
             'blood_groups' => $this->getTaxonomyByType(TaxonomyTypeEnum::BLOODGROUP, $search),
             'provinces' => $this->getTaxonomyByType(TaxonomyTypeEnum::PROVINCE, $search),
             'districts' => $this->getTaxonomyByType(TaxonomyTypeEnum::DISTRICT, $search),
+            'quotas' => $this->getTaxonomyByType(TaxonomyTypeEnum::QUOTA, $search),
             default => [],
         };
 
@@ -39,7 +40,7 @@ class DropdownController extends Controller
         ]);
     }
 
-    protected function getRoles(string $search): array
+    protected function getRoles(?string $search): array
     {
         $query = Role::query();
 
@@ -57,7 +58,7 @@ class DropdownController extends Controller
             ->toArray();
     }
 
-    protected function getProjects(string $search): array
+    protected function getProjects(?string $search): array
     {
         $query = Project::query();
 
@@ -75,7 +76,7 @@ class DropdownController extends Controller
             ->toArray();
     }
 
-    protected function getTaxonomyByType(TaxonomyTypeEnum $type, string $search): array
+    protected function getTaxonomyByType(string $type, ?string $search): array
     {
         $query = Taxonomy::where('type', $type);
 

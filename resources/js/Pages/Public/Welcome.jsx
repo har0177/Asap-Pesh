@@ -68,6 +68,71 @@ export default function Welcome({
         <PublicLayout>
             <Head title="Welcome" />
 
+            {/* Admission Open Banner - Shows when projects are available */}
+            {activeProjects.length > 0 && (
+                <div style={{
+                    background: 'linear-gradient(90deg, #52c41a 0%, #1890ff 50%, #52c41a 100%)',
+                    backgroundSize: '200% 100%',
+                    animation: 'gradientMove 3s ease infinite',
+                    padding: '12px 24px',
+                    textAlign: 'center',
+                    position: 'relative',
+                    overflow: 'hidden',
+                }}>
+                    <style>{`
+                        @keyframes gradientMove {
+                            0% { background-position: 0% 50%; }
+                            50% { background-position: 100% 50%; }
+                            100% { background-position: 0% 50%; }
+                        }
+                        @keyframes blink {
+                            0%, 100% { opacity: 1; }
+                            50% { opacity: 0.6; }
+                        }
+                        .admission-banner-text {
+                            display: inline-flex;
+                            align-items: center;
+                            gap: 12px;
+                            color: #fff;
+                            font-weight: 700;
+                            font-size: 16px;
+                            text-transform: uppercase;
+                            letter-spacing: 1px;
+                        }
+                        .admission-banner-dot {
+                            width: 10px;
+                            height: 10px;
+                            background: #fff;
+                            border-radius: 50%;
+                            animation: blink 1s ease infinite;
+                        }
+                        .admission-banner-btn {
+                            background: #fff;
+                            color: #1890ff;
+                            border: none;
+                            padding: 6px 20px;
+                            border-radius: 20px;
+                            font-weight: 700;
+                            cursor: pointer;
+                            margin-left: 16px;
+                            transition: all 0.3s ease;
+                        }
+                        .admission-banner-btn:hover {
+                            transform: scale(1.05);
+                            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                        }
+                    `}</style>
+                    <span className="admission-banner-text">
+                        <span className="admission-banner-dot"></span>
+                        Admissions Open - {activeProjects.length} Program{activeProjects.length > 1 ? 's' : ''} Available
+                        <span className="admission-banner-dot"></span>
+                    </span>
+                    <Link href="/register">
+                        <button className="admission-banner-btn">Apply Now</button>
+                    </Link>
+                </div>
+            )}
+
             {/* Hero Section with Carousel and News Sidebar */}
             <div className="hero-with-sidebar" style={{ display: 'flex', background: '#f0f2f5' }}>
                 <style>{`
@@ -377,7 +442,7 @@ export default function Welcome({
                     </div>
 
                     {/* Footer Link */}
-                    <Link href="/events">
+                    <Link href="/gallery">
                         <div style={{
                             padding: '14px 20px',
                             background: 'rgba(24, 144, 255, 0.1)',
@@ -392,7 +457,7 @@ export default function Welcome({
                         onMouseEnter={(e) => e.target.style.background = 'rgba(24, 144, 255, 0.2)'}
                         onMouseLeave={(e) => e.target.style.background = 'rgba(24, 144, 255, 0.1)'}
                         >
-                            View All News & Events <RightOutlined style={{ marginLeft: 6 }} />
+                            View Gallery <RightOutlined style={{ marginLeft: 6 }} />
                         </div>
                     </Link>
                 </div>
@@ -567,7 +632,7 @@ export default function Welcome({
                                     hoverable
                                     style={{ height: '100%' }}
                                     actions={[
-                                        <Link href={`/apply/${project.id}`} key="apply">
+                                        <Link href="/register" key="apply">
                                             <Button type="primary" block>
                                                 Apply Now
                                             </Button>
@@ -624,16 +689,16 @@ export default function Welcome({
                     Applications are now open for the upcoming session.
                 </Paragraph>
                 <Space size="large">
-                    <Button type="primary" size="large">
-                        <Link href="/apply" style={{ color: 'inherit' }}>
+                    <Link href="/register">
+                        <Button type="primary" size="large">
                             Apply Now
-                        </Link>
-                    </Button>
-                    <Button size="large" ghost>
-                        <Link href="/contact" style={{ color: '#fff' }}>
+                        </Button>
+                    </Link>
+                    <Link href="/contact">
+                        <Button size="large" ghost style={{ color: '#fff', borderColor: '#fff' }}>
                             Contact Us
-                        </Link>
-                    </Button>
+                        </Button>
+                    </Link>
                 </Space>
             </div>
         </PublicLayout>

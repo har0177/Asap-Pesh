@@ -35,20 +35,20 @@ class ApplyController extends Controller
         // Check prerequisites
         $prerequisites = $this->checkPrerequisites($user);
 
-        if (!$prerequisites['passed']) {
-            return Inertia::render('Student/Apply', [
-                'prerequisites' => $prerequisites,
-                'projects' => [],
-                'quotaList' => [],
-                'documents' => [],
-            ]);
-        }
-
-        // Get available projects (not expired)
+        // Always show projects so users can see what's available
+        // Apply button is disabled on frontend when prerequisites aren't met
+        // Only show valid projects with diploma and quotas configured
         $projects = Project::with(['applications' => function ($query) use ($user) {
             $query->where('user_id', $user->id);
         }, 'diploma'])
-            ->where('expiry_date', '>', now())
+            ->where('status', 1)
+            ->whereNotNull('diploma_id')  // Must have a diploma
+            ->whereNotNull('quota')       // Must have quotas configured
+            ->where('quota', '!=', '[]')  // Not empty quota array
+            ->where(function ($query) {
+                $query->whereNull('deadline')
+                    ->orWhere('deadline', '>=', now());
+            })
             ->orderBy('created_at', 'desc')
             ->get()
             ->map(function ($project) use ($student) {
@@ -59,8 +59,11 @@ class ApplyController extends Controller
 
                 return [
                     'id' => $project->id,
+                    'name' => $project->name,
                     'diploma_name' => $project->diploma?->name,
-                    'expiry_date' => $project->expiry_date,
+                    'deadline' => $project->deadline,
+                    'fee' => $project->fee,
+                    'seats' => $project->seats,
                     'quota' => $project->quota ?? [],
                     'eligible_quotas' => $eligibleQuotas,
                     'has_applied' => $project->applications->isNotEmpty(),
@@ -117,6 +120,11 @@ class ApplyController extends Controller
             'profile_complete' => [
                 'passed' => $student?->profile_status == 1,
                 'message' => 'Please complete your profile first.',
+                'redirect' => route('student.profile'),
+            ],
+            'photo_uploaded' => [
+                'passed' => $user->hasMedia('avatars'),
+                'message' => 'Please upload your photo.',
                 'redirect' => route('student.profile'),
             ],
             'education_added' => [

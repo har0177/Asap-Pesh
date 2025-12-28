@@ -33,6 +33,7 @@ import {
 import { useSetRecoilState } from 'recoil';
 import { userAtom, permissionsAtom } from '@/Helpers/atom.js';
 import { colors, shadows } from '@/theme.js';
+import useIsMobile from '@/Hooks/useIsMobile.js';
 
 const { Header, Sider, Content, Footer } = Layout;
 const { Text, Title } = Typography;
@@ -74,13 +75,51 @@ const menuItems = [
 ];
 
 export default function AdminLayout({ children, title, breadcrumbs }) {
-    const { auth, flash } = usePage().props;
+    const { auth, flash, url } = usePage().props;
+    const currentUrl = usePage().url;
     const setUser = useSetRecoilState(userAtom);
     const setPermissions = useSetRecoilState(permissionsAtom);
-    const [collapsed, setCollapsed] = useState(false);
+    const isMobile = useIsMobile();
+    const [collapsed, setCollapsed] = useState(isMobile);
     const {
         token: { borderRadiusLG },
     } = theme.useToken();
+
+    // Auto-collapse sidebar on mobile
+    useEffect(() => {
+        setCollapsed(isMobile);
+    }, [isMobile]);
+
+    // Determine selected menu key based on current URL
+    const getSelectedKey = () => {
+        const path = currentUrl?.split('?')[0] || '';
+        if (path.includes('/admin/users')) return 'users';
+        if (path.includes('/admin/roles')) return 'roles';
+        if (path.includes('/admin/registered-users')) return 'registered-users';
+        if (path.includes('/admin/students')) return 'students';
+        if (path.includes('/admin/employees')) return 'employees';
+        if (path.includes('/admin/projects')) return 'projects';
+        if (path.includes('/admin/applications')) return 'applications';
+        if (path.includes('/admin/merit')) return 'merit';
+        if (path.includes('/admin/slides')) return 'slides';
+        if (path.includes('/admin/gallery')) return 'gallery';
+        if (path.includes('/admin/content')) return 'content';
+        if (path.includes('/admin/events')) return 'events';
+        if (path.includes('/admin/settings')) return 'site-settings';
+        if (path.includes('/admin/taxonomies')) return 'taxonomies';
+        if (path.includes('/admin/sms')) return 'sms';
+        return 'dashboard';
+    };
+
+    // Determine open submenu keys
+    const getOpenKeys = () => {
+        const selectedKey = getSelectedKey();
+        if (['users', 'roles', 'registered-users'].includes(selectedKey)) return ['users-roles'];
+        if (['projects', 'applications', 'merit'].includes(selectedKey)) return ['admissions'];
+        if (['slides', 'gallery', 'content', 'events'].includes(selectedKey)) return ['cms'];
+        if (['site-settings', 'taxonomies'].includes(selectedKey)) return ['settings'];
+        return [];
+    };
 
     // Set user and permissions in Recoil state
     useEffect(() => {
@@ -169,7 +208,8 @@ export default function AdminLayout({ children, title, breadcrumbs }) {
                 <Menu
                     theme="dark"
                     mode="inline"
-                    defaultSelectedKeys={['dashboard']}
+                    selectedKeys={[getSelectedKey()]}
+                    defaultOpenKeys={getOpenKeys()}
                     items={menuItems}
                     style={{
                         background: 'transparent',

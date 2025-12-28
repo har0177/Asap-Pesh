@@ -363,16 +363,21 @@ export default function PublicLayout({ children }) {
                                 Quick Links
                             </Title>
                             <Space direction="vertical" size={12}>
-                                {['About Us', 'Programs', 'Admissions', 'Gallery'].map((item, index) => (
+                                {[
+                                    { label: 'About Us', href: '/about' },
+                                    { label: 'Staff', href: '/staff' },
+                                    { label: 'Fee Structure', href: '/fee-structure' },
+                                    { label: 'Gallery', href: '/gallery' },
+                                ].map((item, index) => (
                                     <Link
                                         key={index}
-                                        href={`/${item.toLowerCase().replace(' ', '-')}`}
+                                        href={item.href}
                                         style={{
                                             color: 'rgba(255,255,255,0.7)',
                                             transition: 'color 0.2s',
                                         }}
                                     >
-                                        {item}
+                                        {item.label}
                                     </Link>
                                 ))}
                             </Space>
@@ -384,16 +389,21 @@ export default function PublicLayout({ children }) {
                                 Admissions
                             </Title>
                             <Space direction="vertical" size={12}>
-                                {['Apply Now', 'Merit List', 'Fee Structure', 'FAQs'].map((item, index) => (
+                                {[
+                                    { label: 'Apply Now', href: '/register' },
+                                    { label: 'Merit List', href: '/merit-list' },
+                                    { label: 'Fee Structure', href: '/fee-structure' },
+                                    { label: 'Contact Us', href: '/contact' },
+                                ].map((item, index) => (
                                     <Link
                                         key={index}
-                                        href={`/${item.toLowerCase().replace(' ', '-')}`}
+                                        href={item.href}
                                         style={{
                                             color: 'rgba(255,255,255,0.7)',
                                             transition: 'color 0.2s',
                                         }}
                                     >
-                                        {item}
+                                        {item.label}
                                     </Link>
                                 ))}
                             </Space>
@@ -446,11 +456,11 @@ export default function PublicLayout({ children }) {
                         &copy; {new Date().getFullYear()} ASA Peshawar. All rights reserved.
                     </Text>
                     <Space split={<span style={{ color: 'rgba(255,255,255,0.3)' }}>|</span>}>
-                        <Link href="/privacy" style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13 }}>
-                            Privacy Policy
+                        <Link href="/about" style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13 }}>
+                            About Us
                         </Link>
-                        <Link href="/terms" style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13 }}>
-                            Terms of Use
+                        <Link href="/contact" style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13 }}>
+                            Contact
                         </Link>
                     </Space>
                 </div>

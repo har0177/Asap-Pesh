@@ -77,7 +77,7 @@ const GalleryModal = ({
       handleRefreshData?.()
     } catch (error) {
       if (error.errorFields) {
-        console.log('Validation failed:', error)
+        // Validation error - form will show field errors
       } else {
         handleApiError(error)
       }

@@ -53,18 +53,26 @@ class HomeController extends Controller
                 ];
             });
 
-        // Get active projects for admissions (projects table doesn't have status column)
+        // Get active projects for admissions
+        // Only show valid projects with diploma and quotas configured
         $activeProjects = Project::with('diploma')
-            ->where('expiry_date', '>=', now())
+            ->where('status', 1)
+            ->whereNotNull('diploma_id')  // Must have a diploma
+            ->whereNotNull('quota')       // Must have quotas configured
+            ->where('quota', '!=', '[]')  // Not empty quota array
+            ->where(function ($query) {
+                $query->whereNull('deadline')
+                    ->orWhere('deadline', '>=', now());
+            })
             ->get()
             ->map(function ($project) {
                 return [
                     'id' => $project->id,
-                    'name' => $project->diploma?->name ?? 'Admission Project',
+                    'name' => $project->name ?? $project->diploma?->name ?? 'Admission Project',
                     'diploma' => $project->diploma?->name,
-                    'seats' => $project->quota['total'] ?? 0,
+                    'seats' => $project->seats ?? 0,
                     'fee' => $project->fee,
-                    'deadline' => $project->expiry_date,
+                    'deadline' => $project->deadline,
                 ];
             });
 

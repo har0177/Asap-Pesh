@@ -4,9 +4,14 @@ export const dataToOptions = (data) => {
   if (data === undefined || data === null) {
     return []
   }
-  return data?.data?.map((item) => {
+  // Handle axios response - data.data contains the API response {success, data: [...]}
+  const items = data?.data?.data || data?.data || []
+  if (!Array.isArray(items)) {
+    return []
+  }
+  return items.map((item) => {
     return {
-      label: String(item.label || ''),
+      label: String(item.label || item.name || ''),
       value: item.id,
       item: item,
       color: item?.color,

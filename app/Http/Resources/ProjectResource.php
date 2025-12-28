@@ -8,6 +8,21 @@ use Illuminate\Http\Resources\Json\JsonResource;
 class ProjectResource extends JsonResource
 {
     /**
+     * Get quota details with id and name for editing
+     */
+    protected function getQuotaDetails(): array
+    {
+        if (empty($this->quota)) {
+            return [];
+        }
+
+        return \App\Models\Taxonomy::whereIn('id', $this->quota)
+            ->get(['id', 'name'])
+            ->map(fn($t) => ['id' => $t->id, 'name' => $t->name])
+            ->toArray();
+    }
+
+    /**
      * Transform the resource into an array.
      */
     public function toArray(Request $request): array
@@ -27,6 +42,8 @@ class ProjectResource extends JsonResource
                 'fee' => $this->fee,
                 'deadline' => $this->deadline,
                 'status' => $this->status,
+                'quota' => $this->quota ?? [],
+                'quotaDetails' => $this->getQuotaDetails(),
                 'applications_count' => $this->applications_count ?? 0,
                 'created_at' => $this->created_at?->format('Y-m-d'),
                 'deleted_at' => $this->deleted_at?->format('Y-m-d'),
@@ -48,6 +65,7 @@ class ProjectResource extends JsonResource
             'status' => $this->status,
             'quota' => $this->quota ?? [],
             'quota_names' => $this->quotaName ?? [],
+            'quotaDetails' => $this->getQuotaDetails(),
             'applications_count' => $this->applications_count ?? $this->applications()->count(),
             'created_at' => $this->created_at?->format('Y-m-d H:i'),
             'updated_at' => $this->updated_at?->format('Y-m-d H:i'),

@@ -28,12 +28,12 @@ class Application extends Model implements HasMedia
     return $this->belongsTo( User::class );
   }
   
-  public function getquotaNameAttribute()
+  public function getQuotaNameAttribute()
   {
-    $list = [];
-    foreach( $this->quota as $quota ) {
-      $list[] = Taxonomy::where( 'id', (int) $quota )->first()?->name;
+    $quotaIds = is_array($this->quota) ? $this->quota : [];
+    if (empty($quotaIds)) {
+      return [];
     }
-    return $list;
+    return Taxonomy::whereIn('id', $quotaIds)->pluck('name')->toArray();
   }
 }

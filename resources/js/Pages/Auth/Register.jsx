@@ -31,7 +31,7 @@ export default function Register() {
   }
 
   return (
-    <AuthLayout title="Create Account" subtitle="Join us today! Fill in your details below.">
+    <AuthLayout title="Create Account" subtitle="Join us today! Fill in your details below." extraWide>
       <Head title="Register" />
 
       <Form
@@ -40,8 +40,9 @@ export default function Register() {
         onFinish={handleSubmit}
         autoComplete="off"
       >
+        {/* Row 1: First Name, Last Name, Father's Name */}
         <Row gutter={12}>
-          <Col span={12}>
+          <Col xs={24} sm={12} md={8}>
             <Form.Item
               label="First Name"
               validateStatus={errors.first_name ? 'error' : ''}
@@ -56,7 +57,7 @@ export default function Register() {
               />
             </Form.Item>
           </Col>
-          <Col span={12}>
+          <Col xs={24} sm={12} md={8}>
             <Form.Item
               label="Last Name"
               validateStatus={errors.last_name ? 'error' : ''}
@@ -71,10 +72,7 @@ export default function Register() {
               />
             </Form.Item>
           </Col>
-        </Row>
-
-        <Row gutter={12}>
-          <Col span={12}>
+          <Col xs={24} sm={12} md={8}>
             <Form.Item
               label="Father's Name"
               validateStatus={errors.father_name ? 'error' : ''}
@@ -89,7 +87,11 @@ export default function Register() {
               />
             </Form.Item>
           </Col>
-          <Col span={12}>
+        </Row>
+
+        {/* Row 2: Username, Email, Phone */}
+        <Row gutter={12}>
+          <Col xs={24} sm={12} md={8}>
             <Form.Item
               label="Username"
               validateStatus={errors.username ? 'error' : ''}
@@ -105,25 +107,23 @@ export default function Register() {
               />
             </Form.Item>
           </Col>
-        </Row>
-
-        <Form.Item
-          label="Email"
-          validateStatus={errors.email ? 'error' : ''}
-          help={errors.email}
-        >
-          <Input
-            prefix={<MailOutlined />}
-            placeholder="Enter your email"
-            size="large"
-            value={data.email}
-            onChange={(e) => setData('email', e.target.value)}
-            autoComplete="username"
-          />
-        </Form.Item>
-
-        <Row gutter={12}>
-          <Col span={12}>
+          <Col xs={24} sm={12} md={8}>
+            <Form.Item
+              label="Email"
+              validateStatus={errors.email ? 'error' : ''}
+              help={errors.email}
+            >
+              <Input
+                prefix={<MailOutlined />}
+                placeholder="Enter your email"
+                size="large"
+                value={data.email}
+                onChange={(e) => setData('email', e.target.value)}
+                autoComplete="username"
+              />
+            </Form.Item>
+          </Col>
+          <Col xs={24} sm={12} md={8}>
             <Form.Item
               label="Phone"
               validateStatus={errors.phone ? 'error' : ''}
@@ -138,7 +138,11 @@ export default function Register() {
               />
             </Form.Item>
           </Col>
-          <Col span={12}>
+        </Row>
+
+        {/* Row 3: CNIC, Password, Confirm Password */}
+        <Row gutter={12}>
+          <Col xs={24} sm={12} md={8}>
             <Form.Item
               label="CNIC"
               validateStatus={errors.cnic ? 'error' : ''}
@@ -153,37 +157,39 @@ export default function Register() {
               />
             </Form.Item>
           </Col>
+          <Col xs={24} sm={12} md={8}>
+            <Form.Item
+              label="Password"
+              validateStatus={errors.password ? 'error' : ''}
+              help={errors.password}
+            >
+              <Input.Password
+                prefix={<LockOutlined />}
+                placeholder="Create a password"
+                size="large"
+                value={data.password}
+                onChange={(e) => setData('password', e.target.value)}
+                autoComplete="new-password"
+              />
+            </Form.Item>
+          </Col>
+          <Col xs={24} sm={12} md={8}>
+            <Form.Item
+              label="Confirm Password"
+              validateStatus={errors.password_confirmation ? 'error' : ''}
+              help={errors.password_confirmation}
+            >
+              <Input.Password
+                prefix={<LockOutlined />}
+                placeholder="Confirm password"
+                size="large"
+                value={data.password_confirmation}
+                onChange={(e) => setData('password_confirmation', e.target.value)}
+                autoComplete="new-password"
+              />
+            </Form.Item>
+          </Col>
         </Row>
-
-        <Form.Item
-          label="Password"
-          validateStatus={errors.password ? 'error' : ''}
-          help={errors.password}
-        >
-          <Input.Password
-            prefix={<LockOutlined />}
-            placeholder="Create a password"
-            size="large"
-            value={data.password}
-            onChange={(e) => setData('password', e.target.value)}
-            autoComplete="new-password"
-          />
-        </Form.Item>
-
-        <Form.Item
-          label="Confirm Password"
-          validateStatus={errors.password_confirmation ? 'error' : ''}
-          help={errors.password_confirmation}
-        >
-          <Input.Password
-            prefix={<LockOutlined />}
-            placeholder="Confirm your password"
-            size="large"
-            value={data.password_confirmation}
-            onChange={(e) => setData('password_confirmation', e.target.value)}
-            autoComplete="new-password"
-          />
-        </Form.Item>
 
         <Form.Item>
           <Button

@@ -59,7 +59,7 @@ const UserModal = ({
     } catch (error) {
       if (error.errorFields) {
         // Form validation error
-        console.log('Validation failed:', error)
+        // Validation error - form will show field errors
       } else {
         // API error
         handleApiError(error)

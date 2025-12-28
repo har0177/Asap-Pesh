@@ -244,7 +244,7 @@ export default function Apply({ prerequisites, projects, quotaList, documents })
                                 >
                                     <Space direction="vertical" style={{ width: '100%' }}>
                                         <Text type="secondary">
-                                            <ClockCircleOutlined /> Expires: {dayjs(project.expiry_date).format('MMM DD, YYYY')}
+                                            <ClockCircleOutlined /> Deadline: {project.deadline ? dayjs(project.deadline).format('MMM DD, YYYY') : 'Open'}
                                         </Text>
 
                                         {project.has_applied ? (

@@ -7,10 +7,17 @@ import { colors } from '@/theme.js';
 const { Content } = Layout;
 const { Title, Text } = Typography;
 
-export default function AuthLayout({ children, title = 'Welcome', subtitle }) {
+export default function AuthLayout({ children, title = 'Welcome', subtitle, wide = false, extraWide = false }) {
     const {
         token: { borderRadiusLG },
     } = theme.useToken();
+
+    // Determine max width based on props
+    const getMaxWidth = () => {
+        if (extraWide) return 720;
+        if (wide) return 520;
+        return 440;
+    };
 
     return (
         <Layout
@@ -52,35 +59,25 @@ export default function AuthLayout({ children, title = 'Welcome', subtitle }) {
                     className="scale-in"
                     style={{
                         width: '100%',
-                        maxWidth: 440,
+                        maxWidth: getMaxWidth(),
                     }}
                 >
                     {/* Logo Card */}
                     <div style={{ textAlign: 'center', marginBottom: 32 }}>
                         <Link href="/" style={{ display: 'inline-block' }}>
-                            <div
+                            <img
+                                src="/images/logo-sm.png"
+                                alt="ASA Logo"
                                 style={{
-                                    width: 80,
                                     height: 80,
-                                    background: 'rgba(255,255,255,0.95)',
-                                    borderRadius: 16,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    margin: '0 auto 16px',
-                                    boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+                                    width: 'auto',
+                                    marginBottom: 16,
+                                    filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.3))',
                                     transition: 'transform 0.2s',
-                                    padding: 8,
                                 }}
                                 onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
                                 onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                            >
-                                <img
-                                    src="/images/logo-sm.png"
-                                    alt="ASA Logo"
-                                    style={{ height: 60, width: 'auto' }}
-                                />
-                            </div>
+                            />
                             <Title level={3} style={{ color: '#fff', margin: 0, fontWeight: 700 }}>
                                 ASA Peshawar
                             </Title>
@@ -98,7 +95,7 @@ export default function AuthLayout({ children, title = 'Welcome', subtitle }) {
                             border: 'none',
                             overflow: 'hidden',
                         }}
-                        bodyStyle={{ padding: 32 }}
+                        styles={{ body: { padding: 32 } }}
                     >
                         {/* Card Header */}
                         <div style={{ textAlign: 'center', marginBottom: 28 }}>

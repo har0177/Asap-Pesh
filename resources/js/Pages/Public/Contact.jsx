@@ -24,8 +24,7 @@ const Contact = () => {
   const handleSubmit = async (values) => {
     setLoading(true)
     try {
-      // TODO: Submit contact form
-      console.log('Form values:', values)
+      await axios.post('/api/contact', values)
       message.success('Thank you for your message. We will get back to you soon!')
       form.resetFields()
     } catch (error) {

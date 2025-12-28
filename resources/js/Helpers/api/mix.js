@@ -2,7 +2,7 @@ import axios from 'axios'
 import { debounce } from 'lodash'
 
 const fetchOptions = (type, search, params = {}) => {
-  return axios.post(route('v2.admin.dropdown', { type }), { q: search, ...params })
+  return axios.post(route('admin.dropdown', { type }), { q: search, ...params })
 }
 
 const debouncedFetchOptions = debounce((type, search, params, callback) => {

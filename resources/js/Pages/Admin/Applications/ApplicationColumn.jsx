@@ -116,7 +116,14 @@ export const applicationColumns = ({
       headerName: 'Diploma',
       field: 'project.diploma.name',
       width: 150,
-      cellRenderer: (params) => params.data?.project?.diploma?.name || '-',
+      cellRenderer: (params) => {
+        const diploma = params.data?.project?.diploma
+        // Handle both object {id, name} and string formats
+        if (typeof diploma === 'object' && diploma?.name) {
+          return diploma.name
+        }
+        return diploma || '-'
+      },
     },
     {
       headerName: 'Status',
@@ -147,10 +154,20 @@ export const applicationColumns = ({
       },
     },
     {
-      headerName: 'Challan No',
-      field: 'challan_no',
-      width: 120,
-      cellRenderer: (params) => params.value || '-',
+      headerName: 'Challan',
+      field: 'challan_url',
+      width: 100,
+      cellRenderer: (params) => {
+        const challanUrl = params.data?.challan_url
+        if (challanUrl) {
+          return (
+            <a href={challanUrl} target="_blank" rel="noopener noreferrer">
+              <Tag color="green" icon={<FileTextOutlined />}>View</Tag>
+            </a>
+          )
+        }
+        return <Tag color="orange">Not Uploaded</Tag>
+      },
     },
     {
       headerName: 'Quota',
