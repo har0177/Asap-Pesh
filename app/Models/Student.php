@@ -28,7 +28,23 @@ class Student extends Model
       'diploma.name',
   ];
 
-  protected $guarded;
+  protected $fillable = [
+      'user_id',
+      'father_name',
+      'dob',
+      'roll_no',
+      'reg_no',
+      'gender_id',
+      'blood_group_id',
+      'religion',
+      'district_id',
+      'province_id',
+      'address',
+      'diploma_id',
+      'section_id',
+      'session_id',
+      'status',
+  ];
   
   protected $casts = [
     'created_at'     => 'datetime:m-d-Y H:i:s',
@@ -74,5 +90,52 @@ class Student extends Model
   {
     return $this->belongsTo( Taxonomy::class )->whereType( TaxonomyTypeEnum::SESSION );
   }
-  
+
+  /**
+   * Get the educations for the student
+   */
+  public function educations()
+  {
+    return $this->hasMany( Education::class, 'user_id', 'user_id' );
+  }
+
+  /**
+   * Scope to get only active students
+   */
+  public function scopeActive($query)
+  {
+    return $query->where('status', 'Active');
+  }
+
+  /**
+   * Scope to get only admitted students (have reg_no)
+   */
+  public function scopeAdmitted($query)
+  {
+    return $query->whereNotNull('reg_no')->where('reg_no', '!=', '');
+  }
+
+  /**
+   * Scope to get students pending admission
+   */
+  public function scopePending($query)
+  {
+    return $query->where('status', 'Pending');
+  }
+
+  /**
+   * Scope to filter by diploma
+   */
+  public function scopeOfDiploma($query, $diplomaId)
+  {
+    return $query->where('diploma_id', $diplomaId);
+  }
+
+  /**
+   * Scope to filter by session
+   */
+  public function scopeOfSession($query, $sessionId)
+  {
+    return $query->where('session_id', $sessionId);
+  }
 }

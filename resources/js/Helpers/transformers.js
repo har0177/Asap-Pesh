@@ -74,46 +74,9 @@ export const formatSelectValues = (values) => {
   return values
 }
 
-export function hexToRgba(input, alpha = 1) {
-  if (input == null) return `rgba(0,0,0,${alpha})`
-
-  let v = typeof input === 'string' ? input.trim() : String(input)
-
-  if (
-    v.startsWith('rgba(') ||
-    v.startsWith('rgb(') ||
-    v.startsWith('hsl(') ||
-    v.startsWith('var(')
-  ) {
-    return v
-  }
-
-  let hex = v.replace(/^#/, '')
-  if (![3, 4, 6, 8].includes(hex.length)) {
-    return v
-  }
-
-  if (hex.length === 3 || hex.length === 4) {
-    hex = hex.split('').map(c => c + c).join('')
-  }
-
-  const r = parseInt(hex.slice(0, 2), 16)
-  const g = parseInt(hex.slice(2, 4), 16)
-  const b = parseInt(hex.slice(4, 6), 16)
-
-  if (![r, g, b].every(Number.isFinite)) {
-    return `rgba(0,0,0,${alpha})`
-  }
-
-  let a = alpha
-  if (hex.length === 8) {
-    const ah = parseInt(hex.slice(6, 8), 16)
-    const fromHex = Number.isFinite(ah) ? +(ah / 255).toFixed(3) : 1
-    a = alpha ?? fromHex
-  }
-
-  return `rgba(${r}, ${g}, ${b}, ${a})`
-}
+// hexToRgba is now exported from CONSTANT.js - import from there
+// Re-export for backwards compatibility
+export { hexToRgba } from './CONSTANT.js'
 
 export const validatePasswordConfirmation = ({ getFieldValue }) => ({
   validator(_, value) {

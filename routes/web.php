@@ -21,8 +21,8 @@ Route::get('/print-form/{application}', [PrintController::class, 'form'])->name(
 Route::get('/student-card', [PrintController::class, 'studentCard'])->name('student.card');
 Route::get('/attendance', [PrintController::class, 'attendance'])->name('attendance');
 
-// Storage link utility
+// Storage link utility (protected - admin only)
 Route::get('/linkstorage', function () {
     Artisan::call('storage:link');
     return 'Storage linked successfully';
-});
+})->middleware(['auth'])->can('manage settings');

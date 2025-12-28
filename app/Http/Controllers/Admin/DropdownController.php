@@ -9,15 +9,35 @@ use App\Models\Taxonomy;
 use App\Enums\TaxonomyTypeEnum;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class DropdownController extends Controller
 {
+    /**
+     * Valid dropdown types for validation
+     */
+    private const VALID_TYPES = [
+        'roles', 'projects', 'diplomas', 'sessions', 'sections',
+        'genders', 'blood_groups', 'provinces', 'districts', 'quotas'
+    ];
+
     /**
      * Get dropdown options based on type
      */
     public function __invoke(Request $request, string $type): JsonResponse
     {
-        $search = $request->input('q', '') ?? '';
+        // Validate the type parameter
+        if (!in_array($type, self::VALID_TYPES)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid dropdown type',
+                'data' => [],
+            ], 400);
+        }
+
+        // Sanitize and limit search input
+        $search = Str::limit($request->input('q', ''), 100);
+        $search = preg_replace('/[^\p{L}\p{N}\s\-_.]/u', '', $search);
         $params = $request->except(['q', 'type']);
 
         $data = match ($type) {

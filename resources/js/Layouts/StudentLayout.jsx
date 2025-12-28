@@ -298,6 +298,7 @@ export default function StudentLayout({ children, title }) {
                                 borderRadius: 10,
                                 color: colors.gray700,
                             }}
+                            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
                         />
                         {title && (
                             <Title level={4} style={{ margin: 0, color: colors.gray900 }}>
@@ -308,7 +309,7 @@ export default function StudentLayout({ children, title }) {
 
                     {/* Right: Notifications + User */}
                     <Space size={16}>
-                        <Badge count={0} size="small">
+                        <Badge count={0} size="small" showZero={false}>
                             <Button
                                 type="text"
                                 icon={<BellOutlined style={{ fontSize: 20 }} />}
@@ -318,6 +319,7 @@ export default function StudentLayout({ children, title }) {
                                     borderRadius: 10,
                                     color: colors.gray600,
                                 }}
+                                aria-label="Notifications"
                             />
                         </Badge>
 

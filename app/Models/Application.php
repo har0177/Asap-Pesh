@@ -10,9 +10,18 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 class Application extends Model implements HasMedia
 {
   use HasFactory, InteractsWithMedia;
-  
-  protected $guarded = [];
-  protected $casts   = [
+
+  protected $fillable = [
+    'user_id',
+    'project_id',
+    'application_number',
+    'quota',
+    'status',
+    'payment_date',
+    'remarks',
+  ];
+
+  protected $casts = [
     'quota' => 'json'
   ];
   

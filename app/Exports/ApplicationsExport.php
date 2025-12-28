@@ -30,18 +30,18 @@ class ApplicationsExport implements FromCollection, WithHeadings
             ->when($this->filters['quota_search'] ?? null, fn($q, $quota) => $q->whereJsonContains('quota', $quota))
             ->when($this->filters['diploma_search'] ?? null, fn($q, $diploma) => $q->whereHas('project', fn($p) => $p->where('diploma_id', $diploma)))
             ->whereYear('created_at', Carbon::now()->year)
-            ->with(['user', 'project.diploma'])
+            ->with(['user.student.district', 'project.diploma'])
             ->orderBy('id', 'desc');
 
         return $query->get()->map(function ($app) {
             return [
-                'Application #' => $app->application_number,
-                'Full Name' => $app->user->full_name,
-                'Father Name' => $app->user->student->father_name,
-                'Diploma' => $app->project->diploma->name ?? '',
+                'Application #' => $app->application_number ?? '',
+                'Full Name' => $app->user?->full_name ?? '',
+                'Father Name' => $app->user?->student?->father_name ?? '',
+                'Diploma' => $app->project?->diploma?->name ?? '',
                 'Quota' => implode(', ', $app->quotaName ?? []),
-                'District' => $app->user->student->district->name,
-                'Created At' => $app->created_at->format('Y-m-d'),
+                'District' => $app->user?->student?->district?->name ?? '',
+                'Created At' => $app->created_at?->format('Y-m-d') ?? '',
             ];
         });
     }

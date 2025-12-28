@@ -324,9 +324,12 @@ export default function Welcome({
                             overflow: hidden;
                             height: 370px;
                             position: relative;
+                            mask-image: linear-gradient(to bottom, transparent 0%, black 5%, black 95%, transparent 100%);
+                            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 5%, black 95%, transparent 100%);
                         }
                         .news-marquee-content {
-                            animation: marquee 20s linear infinite;
+                            animation: marquee 25s linear infinite;
+                            padding: 8px 0;
                         }
                         .news-marquee-content:hover {
                             animation-play-state: paused;
@@ -352,6 +355,8 @@ export default function Welcome({
                             -webkit-line-clamp: 2;
                             -webkit-box-orient: vertical;
                             overflow: hidden;
+                            word-break: break-word;
+                            hyphens: auto;
                         }
                         .news-item-meta {
                             display: flex;

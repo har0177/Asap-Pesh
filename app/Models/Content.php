@@ -14,7 +14,15 @@ class Content extends Model implements HasMedia
     use Sluggable;
     use InteractsWithMedia;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'title',
+        'slug',
+        'content',
+        'excerpt',
+        'type',
+        'status',
+        'meta',
+    ];
 
     public function sluggable(): array
     {

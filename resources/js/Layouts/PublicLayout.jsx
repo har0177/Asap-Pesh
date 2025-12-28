@@ -252,6 +252,7 @@ export default function PublicLayout({ children }) {
                         onClick={() => setMobileMenuOpen(true)}
                         className="mobile-menu-btn"
                         style={{ display: 'none' }}
+                        aria-label="Open menu"
                     />
                 </div>
             </Header>

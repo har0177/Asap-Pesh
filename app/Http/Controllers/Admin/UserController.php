@@ -9,6 +9,7 @@ use App\Http\Resources\UserResource;
 use App\Models\Role;
 use App\Models\User;
 use App\Traits\HasListing;
+use App\Traits\HandlesApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -18,7 +19,7 @@ use Inertia\Response as InertiaResponse;
 
 class UserController extends Controller
 {
-    use HasListing;
+    use HasListing, HandlesApiResponse;
 
     /**
      * JSON listing for DataGridTable (AG Grid)
@@ -83,14 +84,11 @@ class UserController extends Controller
 
         Notify::success('User created successfully.');
 
-        if ($request->wantsJson()) {
-            return Response::success([
-                'user' => new UserResource($user->load('role')),
-            ]);
-        }
-
-        return redirect()->route('admin.users.index')
-            ->with('success', 'User created successfully.');
+        return $this->respondCreated(
+            ['user' => new UserResource($user->load('role'))],
+            'User created successfully.',
+            'admin.users.index'
+        );
     }
 
     public function show(Request $request, User $user)
@@ -142,14 +140,11 @@ class UserController extends Controller
 
         Notify::success('User updated successfully.');
 
-        if ($request->wantsJson()) {
-            return Response::success([
-                'user' => new UserResource($user->load('role')),
-            ]);
-        }
-
-        return redirect()->route('admin.users.index')
-            ->with('success', 'User updated successfully.');
+        return $this->respondSuccess(
+            ['user' => new UserResource($user->load('role'))],
+            'User updated successfully.',
+            'admin.users.index'
+        );
     }
 
     public function destroy(Request $request, User $user)
@@ -158,12 +153,7 @@ class UserController extends Controller
 
         Notify::success('User deleted successfully.');
 
-        if ($request->wantsJson()) {
-            return Response::success();
-        }
-
-        return redirect()->route('admin.users.index')
-            ->with('success', 'User deleted successfully.');
+        return $this->respondDeleted('User deleted successfully.', 'admin.users.index');
     }
 
     public function restore(Request $request, int $id)
@@ -173,13 +163,10 @@ class UserController extends Controller
 
         Notify::success('User restored successfully.');
 
-        if ($request->wantsJson()) {
-            return Response::success([
-                'user' => new UserResource($user->load('role')),
-            ]);
-        }
-
-        return redirect()->route('admin.users.index')
-            ->with('success', 'User restored successfully.');
+        return $this->respondRestored(
+            ['user' => new UserResource($user->load('role'))],
+            'User restored successfully.',
+            'admin.users.index'
+        );
     }
 }

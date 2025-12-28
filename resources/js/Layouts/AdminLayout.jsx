@@ -297,6 +297,7 @@ export default function AdminLayout({ children, title, breadcrumbs }) {
                                 borderRadius: 10,
                                 color: colors.gray700,
                             }}
+                            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
                         />
 
                         <Input
@@ -314,7 +315,7 @@ export default function AdminLayout({ children, title, breadcrumbs }) {
 
                     {/* Right: Notifications + User */}
                     <Space size={16}>
-                        <Badge count={5} size="small">
+                        <Badge count={0} size="small" showZero={false}>
                             <Button
                                 type="text"
                                 icon={<BellOutlined style={{ fontSize: 20 }} />}
@@ -324,6 +325,7 @@ export default function AdminLayout({ children, title, breadcrumbs }) {
                                     borderRadius: 10,
                                     color: colors.gray600,
                                 }}
+                                aria-label="Notifications"
                             />
                         </Badge>
 
@@ -350,15 +352,8 @@ export default function AdminLayout({ children, title, breadcrumbs }) {
                                     icon={<UserOutlined />}
                                     src={auth?.user?.avatar}
                                     style={{ background: colors.primary }}
+                                    alt={auth?.user?.full_name || 'User avatar'}
                                 />
-                                <div style={{ display: 'none' }}>
-                                    <Text strong style={{ display: 'block', fontSize: 13 }}>
-                                        {auth?.user?.full_name || 'Admin'}
-                                    </Text>
-                                    <Text type="secondary" style={{ fontSize: 12 }}>
-                                        {auth?.user?.role?.name || 'Admin'}
-                                    </Text>
-                                </div>
                             </div>
                         </Dropdown>
                     </Space>

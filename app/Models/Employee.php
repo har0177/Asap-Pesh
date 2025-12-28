@@ -10,7 +10,21 @@
 		{
 				use Notifiable;
 				use InteractsWithMedia;
-				protected $guarded;
+
+				protected $fillable = [
+						'name',
+						'designation',
+						'department',
+						'email',
+						'phone',
+						'gender_id',
+						'blood_group_id',
+						'address',
+						'joining_date',
+						'status',
+						'order',
+				];
+
 				protected $casts = [
 						'created_at' => 'datetime:m-d-Y H:i:s',
 						'updated_at' => 'datetime:m-d-Y H:i:s'
@@ -23,8 +37,16 @@
 				{
 						return $this->belongsTo( Taxonomy::class )->whereType( TaxonomyTypeEnum::GENDER );
 				}
-				public function getAvatarAttribute() // notice that the attribute name is in CamelCase.
+				public function getAvatarAttribute()
 				{
 						return $this->hasMedia( 'avatars' ) ? $this->getFirstMediaUrl( 'avatars' ) : asset( 'profile.png' );
+				}
+
+				/**
+				 * Get the full name attribute (alias for name for consistency)
+				 */
+				public function getFullNameAttribute()
+				{
+						return $this->name;
 				}
 		}

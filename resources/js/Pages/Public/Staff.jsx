@@ -147,7 +147,8 @@ const Staff = ({ employees = [] }) => {
           borderBottom: '1px solid #eee',
           position: 'sticky',
           top: 56,
-          zIndex: 10,
+          zIndex: 100,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
         }}
       >
         <div style={{ maxWidth: 800, margin: '0 auto' }}>
@@ -262,10 +263,9 @@ const Staff = ({ employees = [] }) => {
                               style={{
                                 margin: '8px 0 4px',
                                 fontSize: 16,
-                                textTransform: 'capitalize',
                               }}
                             >
-                              {staff.name?.toLowerCase()}
+                              {staff.name}
                             </Title>
 
                             <Tag

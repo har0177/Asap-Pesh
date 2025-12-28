@@ -3,7 +3,7 @@ import { Col, Form, Input, Row, message, Select, Descriptions, Tag, Avatar, Imag
 import { UserOutlined, FileImageOutlined, FilePdfOutlined, EyeOutlined, DownloadOutlined } from '@ant-design/icons'
 import axios from 'axios'
 import CustomModal from '@/Components/CustomModal.jsx'
-import { handleApiError } from '@/Helpers/CONSTANT.js'
+import { handleApiError, STATUS_COLORS, getStatusColor } from '@/Helpers/CONSTANT.js'
 
 const { TextArea } = Input
 
@@ -13,13 +13,6 @@ const STATUS_OPTIONS = [
   { value: 'Approved', label: 'Approved' },
   { value: 'Rejected', label: 'Rejected' },
 ]
-
-const STATUS_COLORS = {
-  Pending: 'orange',
-  Paid: 'blue',
-  Approved: 'green',
-  Rejected: 'red',
-}
 
 const ApplicationModal = ({
   visible,
@@ -74,7 +67,8 @@ const ApplicationModal = ({
       open={visible}
       onCancel={handleClose}
       title={isViewMode ? 'View Application' : 'Update Application Status'}
-      width={700}
+      width="90%"
+      style={{ maxWidth: 700 }}
       showSave={!isViewMode}
       saveText="Update Status"
       onSave={handleSubmit}
@@ -105,7 +99,7 @@ const ApplicationModal = ({
             {record?.project?.diploma?.name || record?.project?.diploma || 'N/A'}
           </Descriptions.Item>
           <Descriptions.Item label="Current Status">
-            <Tag color={STATUS_COLORS[record?.status] || 'default'}>
+            <Tag color={getStatusColor(record?.status)}>
               {record?.status || 'Pending'}
             </Tag>
           </Descriptions.Item>

@@ -51,7 +51,7 @@ export default function ForgotPassword({ status }) {
             size="large"
             value={data.email}
             onChange={(e) => setData('email', e.target.value)}
-            autoComplete="username"
+            autoComplete="email"
           />
         </Form.Item>
 

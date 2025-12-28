@@ -210,15 +210,32 @@ export const MODAL_TITLE_STYLE = (token) => ({
   margin: '-20px -24px 24px -24px',
 })
 
-// Status Colors
+// Status Colors - Consolidated colors for all status types
 export const STATUS_COLORS = {
+  // General status
   active: 'green',
+  Active: 'green',
   inactive: 'red',
+  Inactive: 'red',
   pending: 'orange',
+  Pending: 'orange',
   approved: 'green',
+  Approved: 'green',
   rejected: 'red',
+  Rejected: 'red',
   completed: 'blue',
   draft: 'default',
+  // Application specific
+  Paid: 'blue',
+  paid: 'blue',
+  // Student specific
+  Graduated: 'cyan',
+  graduated: 'cyan',
+}
+
+// Helper function to get status color with fallback
+export const getStatusColor = (status) => {
+  return STATUS_COLORS[status] || STATUS_COLORS[status?.toLowerCase()] || 'default'
 }
 
 // Common filter field definitions for DataGridTable

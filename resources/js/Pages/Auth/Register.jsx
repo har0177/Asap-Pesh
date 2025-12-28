@@ -94,9 +94,16 @@ export default function Register() {
           <Col xs={24} sm={12} md={8}>
             <Form.Item
               label="Username"
+              name="username"
               validateStatus={errors.username ? 'error' : ''}
               help={errors.username}
-              extra="3-8 characters"
+              extra="3-8 alphanumeric characters"
+              rules={[
+                { required: true, message: 'Username is required' },
+                { min: 3, message: 'Username must be at least 3 characters' },
+                { max: 8, message: 'Username must be at most 8 characters' },
+                { pattern: /^[a-zA-Z0-9]+$/, message: 'Only letters and numbers allowed' },
+              ]}
             >
               <Input
                 prefix={<UserOutlined />}
@@ -104,6 +111,8 @@ export default function Register() {
                 size="large"
                 value={data.username}
                 onChange={(e) => setData('username', e.target.value)}
+                minLength={3}
+                maxLength={8}
               />
             </Form.Item>
           </Col>

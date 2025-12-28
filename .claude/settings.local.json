@@ -48,7 +48,8 @@
       "mcp__playwright__browser_hover",
       "Bash(mysql:*)",
       "Bash(C:/laragon/bin/mysql/mysql-8.0.30-winx64/bin/mysql.exe:*)",
-      "Bash(php:*)"
+      "Bash(php:*)",
+      "Bash(.example \")"
     ]
   }
 }

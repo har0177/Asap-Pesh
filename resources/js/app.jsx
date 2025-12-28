@@ -8,6 +8,7 @@ import { RecoilRoot } from 'recoil';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { theme } from './theme';
 import { route } from 'ziggy-js';
+import ErrorBoundary from './Components/ErrorBoundary';
 
 // Make route globally available
 window.route = route;
@@ -39,15 +40,17 @@ createInertiaApp({
         const root = createRoot(el);
 
         root.render(
-            <RecoilRoot>
-                <QueryClientProvider client={queryClient}>
-                    <ConfigProvider theme={theme}>
-                        <AntApp>
-                            <App {...props} />
-                        </AntApp>
-                    </ConfigProvider>
-                </QueryClientProvider>
-            </RecoilRoot>
+            <ErrorBoundary>
+                <RecoilRoot>
+                    <QueryClientProvider client={queryClient}>
+                        <ConfigProvider theme={theme}>
+                            <AntApp>
+                                <App {...props} />
+                            </AntApp>
+                        </ConfigProvider>
+                    </QueryClientProvider>
+                </RecoilRoot>
+            </ErrorBoundary>
         );
     },
     progress: {

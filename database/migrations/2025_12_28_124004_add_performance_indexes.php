@@ -26,6 +26,45 @@ return new class extends Migration
             if (!$this->hasIndex('students', 'students_status_index')) {
                 $table->index('status');
             }
+            if (!$this->hasIndex('students', 'students_diploma_id_index')) {
+                $table->index('diploma_id');
+            }
+            if (!$this->hasIndex('students', 'students_session_id_index')) {
+                $table->index('session_id');
+            }
+            if (!$this->hasIndex('students', 'students_section_id_index')) {
+                $table->index('section_id');
+            }
+        });
+
+        // Projects table indexes
+        Schema::table('projects', function (Blueprint $table) {
+            if (!$this->hasIndex('projects', 'projects_status_index')) {
+                $table->index('status');
+            }
+            if (!$this->hasIndex('projects', 'projects_diploma_id_index')) {
+                $table->index('diploma_id');
+            }
+            if (!$this->hasIndex('projects', 'projects_dates_index')) {
+                $table->index(['start_date', 'end_date']);
+            }
+        });
+
+        // Employees table indexes
+        Schema::table('employees', function (Blueprint $table) {
+            if (!$this->hasIndex('employees', 'employees_status_index')) {
+                $table->index('status');
+            }
+            if (!$this->hasIndex('employees', 'employees_order_index')) {
+                $table->index('order');
+            }
+        });
+
+        // Educations table indexes
+        Schema::table('educations', function (Blueprint $table) {
+            if (!$this->hasIndex('educations', 'educations_user_id_index')) {
+                $table->index('user_id');
+            }
         });
 
         // Applications table indexes
@@ -78,6 +117,24 @@ return new class extends Migration
         Schema::table('students', function (Blueprint $table) {
             $table->dropIndex(['user_id']);
             $table->dropIndex(['status']);
+            $table->dropIndex(['diploma_id']);
+            $table->dropIndex(['session_id']);
+            $table->dropIndex(['section_id']);
+        });
+
+        Schema::table('projects', function (Blueprint $table) {
+            $table->dropIndex(['status']);
+            $table->dropIndex(['diploma_id']);
+            $table->dropIndex(['start_date', 'end_date']);
+        });
+
+        Schema::table('employees', function (Blueprint $table) {
+            $table->dropIndex(['status']);
+            $table->dropIndex(['order']);
+        });
+
+        Schema::table('educations', function (Blueprint $table) {
+            $table->dropIndex(['user_id']);
         });
 
         Schema::table('applications', function (Blueprint $table) {
